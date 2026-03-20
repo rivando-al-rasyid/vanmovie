@@ -1,10 +1,16 @@
-import 'dotenv/config';
-
-const BASE_URL = process.env.BASE_URL;
-const IMG_BASE = process.env.IMG_BASE;
-const API_KEY = process.env.API_KEY;
+// --- Config Loader ---
+// Fetches env vars from the Express server (set in .env)
+async function loadConfig() {
+  const res = await fetch('/config.json');
+  if (!res.ok) throw new Error('Failed to load config from server');
+  return res.json();
+}
 
 // --- State ---
+let BASE_URL = '';
+let IMG_BASE = '';
+let API_KEY = '';
+
 let allFilms = [];
 let filteredFilms = [];
 let genres = {};
@@ -287,6 +293,18 @@ function initEventListeners() {
 // --- Init ---
 async function init() {
   try {
+    // Load config from server (reads from .env)
+    const config = await loadConfig();
+    BASE_URL = config.BASE_URL;
+    IMG_BASE = config.IMG_BASE;
+    API_KEY = config.API_KEY;
+
+    if (!API_KEY) {
+      document.getElementById('film-list').innerHTML =
+        '<div class="no-results">⚠️ API Key belum diset. Tambahkan API_KEY di file .env</div>';
+      return;
+    }
+
     const genreRes = await tmdbFetch('/genre/movie/list');
     genreRes.genres.forEach(g => (genres[g.id] = g.name));
     buildGenreMenu(genreRes.genres);
