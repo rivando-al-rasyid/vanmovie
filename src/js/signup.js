@@ -1,18 +1,17 @@
 import '../css/style.css';
 
-// Dummy registered emails for demo
 const registeredEmails = ['test@example.com', 'user@moviespace.com'];
 
 function clearErrors() {
-  document.getElementById('email-error').classList.remove('visible');
-  document.getElementById('password-error').classList.remove('visible');
-  document.getElementById('confirm-error').classList.remove('visible');
+  ['email-error', 'password-error', 'confirm-error'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
 }
 
 function showError(id, msg) {
   const el = document.getElementById(id);
   if (msg) el.textContent = msg;
-  el.classList.add('visible');
+  el.classList.remove('hidden');
 }
 
 function handleSignup() {
@@ -42,7 +41,6 @@ function handleSignup() {
   }
 }
 
-// Attach handler (replaces inline onclick in HTML)
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelector('.btn-signup')?.addEventListener('click', handleSignup);
 });

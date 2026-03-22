@@ -1,1 +1,27 @@
 @import "tailwindcss";
+
+@layer base {
+  html, body {
+    background-color: #111111;
+    color: #e5e7eb;
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .skeleton-line {
+    background: linear-gradient(90deg, #1f1f1f 25%, #2a2a2a 50%, #1f1f1f 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .dropdown-menu.open { display: block !important; }
+  .page-btn.active { background-color: #f97316; color: #111; border-color: #f97316; }
+  .filter-btn.active-filter { border-color: #f97316; color: #f97316; }
+  .nav-link.active { color: #f97316; }
+}
