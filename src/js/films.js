@@ -1,6 +1,6 @@
 import '../css/style.css';
 
-// Watchlist helpers (shared with detail.js via localStorage)
+// Watchlist helpers
 function getMyList() {
   try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
 }
@@ -65,17 +65,17 @@ async function loadFilms() {
     renderPagination(data.total_results || 0);
   } catch {
     document.getElementById('film-list').innerHTML =
-      '<div class="py-8 text-center text-gray-500">Gagal memuat data. Coba refresh halaman.</div>';
+      `<div class="py-8 text-center" style="color:var(--text-faint)">Gagal memuat data. Coba refresh halaman.</div>`;
   }
 }
 
 function buildGenreMenu(list) {
   const menu = document.getElementById('genre-menu');
-  menu.innerHTML = '<div class="dropdown-item px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-orange-400 cursor-pointer" data-genre-id="0">All Genres</div>';
+  menu.innerHTML = `<div class="dropdown-item px-4 py-2 text-sm cursor-pointer" data-genre-id="0">All Genres</div>`;
   list.forEach(g => {
     const el = document.createElement('div');
-    el.className       = 'dropdown-item px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-orange-400 cursor-pointer';
-    el.textContent     = g.name;
+    el.className         = 'dropdown-item px-4 py-2 text-sm cursor-pointer';
+    el.textContent       = g.name;
     el.dataset.genreId   = g.id;
     el.dataset.genreName = g.name;
     menu.appendChild(el);
@@ -88,10 +88,54 @@ function buildGenreMenu(list) {
   });
 }
 
+// ── Film card HTML ────────────────────────────────────────────────────────────
+function filmCardHTML(film) {
+  const poster    = film.poster_path ? IMG_BASE + film.poster_path : '';
+  const rating    = film.vote_average ? film.vote_average.toFixed(1) : 'N/A';
+  const year      = film.release_date ? film.release_date.split('-')[0] : '';
+  const filmGenres = (film.genre_ids || []).map(id => genres[id]).filter(Boolean);
+  const desc      = film.overview || 'No description available.';
+  const truncDesc = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
+  const inList    = isInList(film.id);
+  const filmJSON  = JSON.stringify({ id: film.id, title: film.title, poster_path: film.poster_path, vote_average: film.vote_average, vote_count: film.vote_count, release_date: film.release_date, genre_ids: film.genre_ids, overview: film.overview });
+
+  const posterEl = poster
+    ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0" style="background-color:var(--bg-card)" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='var(--bg-card)';this.src=''">`
+    : `<div class="w-20 h-28 shrink-0 rounded-lg flex items-center justify-center text-xs text-center p-1" style="background-color:var(--bg-card);color:var(--text-faint)">No Poster</div>`;
+
+  const watchlistStyle = inList
+    ? `style="border-color:var(--accent);color:var(--accent)"`
+    : `style="border-color:var(--border-subtle);color:var(--text-muted)"`;
+
+  return `
+    <div class="flex gap-4 rounded-xl p-4 transition-colors" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+      ${posterEl}
+      <div class="flex flex-col gap-1.5 min-w-0">
+        <div class="text-sm font-semibold" style="color:var(--text)">
+          ${escHtml(film.title)} <span class="font-normal text-xs" style="color:var(--text-faint)">${year}</span>
+        </div>
+        <div class="flex flex-wrap gap-1">
+          ${filmGenres.map(g => `<span class="tag">${g}</span>`).join('')}
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="tmdb-badge">IMDb</span>
+          <span class="font-semibold" style="color:var(--accent)">${rating} ★</span>
+          <span style="color:var(--text-faint)">(${(film.vote_count || 0).toLocaleString()} votes)</span>
+        </div>
+        <div class="text-xs leading-relaxed" style="color:var(--text-muted)">${escHtml(truncDesc)}</div>
+        <div class="flex gap-2 mt-1">
+          <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
+          <button class="btn-watchlist text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer bg-transparent" ${watchlistStyle} data-id="${film.id}" data-film='${escAttr(filmJSON)}'>${inList ? 'Remove from Watchlist' : 'Add to Watchlists'}</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderFilms() {
   const list = document.getElementById('film-list');
   if (!filteredFilms.length) {
-    list.innerHTML = '<div class="py-8 text-center text-gray-500">Tidak ada film ditemukan.</div>';
+    list.innerHTML = `<div class="py-8 text-center" style="color:var(--text-faint)">Tidak ada film ditemukan.</div>`;
     document.getElementById('page-title').textContent = 'All Films (0)';
     return;
   }
@@ -99,50 +143,25 @@ function renderFilms() {
   const start     = (currentPage - 1) * perPage;
   const pageFilms = filteredFilms.slice(start, start + perPage);
 
-  list.innerHTML = pageFilms.map(film => {
-    const poster     = film.poster_path ? IMG_BASE + film.poster_path : '';
-    const rating     = film.vote_average ? film.vote_average.toFixed(1) : 'N/A';
-    const year       = film.release_date ? film.release_date.split('-')[0] : '';
-    const filmGenres = (film.genre_ids || []).map(id => genres[id]).filter(Boolean);
-    const desc       = film.overview || 'No description available.';
-    const truncDesc  = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
-
-    return `
-      <div class="flex gap-4 bg-[#1a1a1a] border border-white/5 rounded-xl p-4 hover:border-white/10 transition-colors">
-        ${poster
-          ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0 bg-[#111]" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='#1a1a1a';this.src=''">`
-          : `<div class="w-20 h-28 shrink-0 rounded-lg bg-[#111] flex items-center justify-center text-gray-600 text-xs text-center p-1">No Poster</div>`
-        }
-        <div class="flex flex-col gap-1.5 min-w-0">
-          <div class="text-sm font-semibold text-white">
-            ${escHtml(film.title)} <span class="text-gray-500 font-normal text-xs">${year}</span>
-          </div>
-          <div class="flex flex-wrap gap-1">
-            ${filmGenres.map(g => `<span class="text-xs px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5">${g}</span>`).join('')}
-          </div>
-          <div class="flex items-center gap-2 text-xs">
-            <span class="px-1.5 py-0.5 bg-[#032541] text-blue-300 rounded text-[10px] font-bold">TMDB</span>
-            <span class="text-orange-400 font-semibold">${rating} ★</span>
-            <span class="text-gray-600">(${(film.vote_count || 0).toLocaleString()} votes)</span>
-          </div>
-          <div class="text-xs text-gray-500 leading-relaxed">${escHtml(truncDesc)}</div>
-          <div class="flex gap-2 mt-1">
-            <a href="detail.html?id=${film.id}" class="text-xs px-3 py-1.5 bg-orange-500 hover:bg-orange-400 text-black font-semibold rounded-lg transition-colors no-underline">View Details</a>
-            <button class="btn-watchlist text-xs px-3 py-1.5 border ${isInList(film.id) ? "border-orange-500 text-orange-400" : "border-white/10 text-gray-400"} hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent" data-id="${film.id}" data-film='${JSON.stringify({id:film.id,title:film.title,poster_path:film.poster_path,vote_average:film.vote_average,vote_count:film.vote_count,release_date:film.release_date,genre_ids:film.genre_ids,overview:film.overview})}'>${isInList(film.id) ? "Remove from Watchlist" : "Add to Watchlists"}</button>
-          </div>
-        </div>
-      </div>
-    `;
-  }).join('');
+  list.innerHTML = pageFilms.map(filmCardHTML).join('');
 
   list.querySelectorAll('.btn-watchlist').forEach(btn => {
     btn.addEventListener('click', () => {
       const filmData = JSON.parse(btn.dataset.film);
-      const list2 = getMyList();
-      const idx = list2.findIndex(f => f.id === filmData.id);
-      if (idx === -1) { list2.push(filmData); btn.textContent = 'Remove from Watchlist'; btn.classList.add('border-orange-500', 'text-orange-400'); btn.classList.remove('border-white/10', 'text-gray-400'); }
-      else { list2.splice(idx, 1); btn.textContent = 'Add to Watchlists'; btn.classList.remove('border-orange-500', 'text-orange-400'); btn.classList.add('border-white/10', 'text-gray-400'); }
-      saveMyList(list2);
+      const saved    = getMyList();
+      const idx      = saved.findIndex(f => f.id === filmData.id);
+      if (idx === -1) {
+        saved.push(filmData);
+        btn.textContent = 'Remove from Watchlist';
+        btn.style.borderColor = 'var(--accent)';
+        btn.style.color       = 'var(--accent)';
+      } else {
+        saved.splice(idx, 1);
+        btn.textContent = 'Add to Watchlists';
+        btn.style.borderColor = 'var(--border-subtle)';
+        btn.style.color       = 'var(--text-muted)';
+      }
+      saveMyList(saved);
     });
   });
 }
@@ -168,7 +187,10 @@ function renderPagination(totalResults) {
     const btn     = document.createElement('button');
     btn.innerHTML = symbol;
     btn.disabled  = disabled;
-    btn.className = 'text-gray-400 hover:text-white disabled:opacity-25 disabled:cursor-not-allowed transition-colors text-lg leading-none cursor-pointer bg-transparent border-none p-0';
+    btn.className = 'disabled:opacity-25 disabled:cursor-not-allowed transition-colors text-lg leading-none cursor-pointer bg-transparent border-none p-0';
+    btn.style.color = 'var(--text-muted)';
+    btn.addEventListener('mouseover', () => { if (!disabled) btn.style.color = 'var(--text)'; });
+    btn.addEventListener('mouseout',  () => { btn.style.color = 'var(--text-muted)'; });
     btn.addEventListener('click', onClick);
     return btn;
   };
@@ -190,7 +212,7 @@ function renderPagination(totalResults) {
 
 function showSkeleton() {
   document.getElementById('film-list').innerHTML = Array(5).fill(`
-    <div class="flex gap-4 bg-[#1a1a1a] border border-white/5 rounded-xl p-4">
+    <div class="flex gap-4 rounded-xl p-4" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)">
       <div class="skeleton-line w-20 h-28 shrink-0 rounded-lg" style="margin-bottom:0"></div>
       <div class="flex flex-col gap-2 flex-1 pt-1">
         <div class="skeleton-line" style="width:55%;height:16px"></div>
@@ -248,17 +270,6 @@ function onPerPageChange() {
   renderFilms();
 }
 
-function addToWatchlist(btn, title) {
-  btn.textContent       = '✓ Added';
-  btn.style.borderColor = '#f97316';
-  btn.style.color       = '#f97316';
-  setTimeout(() => {
-    btn.textContent       = 'Add to Watchlists';
-    btn.style.borderColor = '';
-    btn.style.color       = '';
-  }, 2000);
-}
-
 function escHtml(str) {
   return String(str)
     .replace(/&/g,  '&amp;')
@@ -293,7 +304,7 @@ function initEventListeners() {
 async function init() {
   if (!API_KEY) {
     document.getElementById('film-list').innerHTML =
-      '<div class="py-8 text-center text-gray-500">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>';
+      `<div class="py-8 text-center" style="color:var(--text-faint)">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
     return;
   }
 
@@ -305,7 +316,7 @@ async function init() {
     await loadFilms();
   } catch {
     document.getElementById('film-list').innerHTML =
-      '<div class="py-8 text-center text-gray-500">Gagal memuat data dari TMDB.</div>';
+      `<div class="py-8 text-center" style="color:var(--text-faint)">Gagal memuat data dari TMDB.</div>`;
   }
 }
 

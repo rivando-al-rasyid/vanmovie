@@ -4,7 +4,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.themoviedb.org/3'
 const IMG_BASE  = import.meta.env.VITE_IMG_BASE  || 'https://image.tmdb.org/t/p/w500';
 const API_KEY   = import.meta.env.VITE_API_KEY   || '';
 
-// ── Watchlist helpers (same as films.js) ─────────────────────────────────────
+// ── Watchlist helpers ─────────────────────────────────────────────────────────
 function getMyList() {
   try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
 }
@@ -36,19 +36,19 @@ function formatRuntime(min) {
   return h ? `${h}h ${m}m` : `${m}m`;
 }
 
-// ── My List button — same logic as films.js ───────────────────────────────────
+// ── My List button ────────────────────────────────────────────────────────────
 function bindMyListBtn(filmData) {
   const btn = document.getElementById('btn-mylist');
 
   const update = () => {
     if (isInList(filmData.id)) {
       btn.textContent = 'Remove from Watchlist';
-      btn.classList.add('border-orange-500', 'text-orange-400');
-      btn.classList.remove('border-white/10', 'text-gray-400');
+      btn.style.borderColor = 'var(--accent)';
+      btn.style.color       = 'var(--accent)';
     } else {
       btn.textContent = 'Add to Watchlists';
-      btn.classList.remove('border-orange-500', 'text-orange-400');
-      btn.classList.add('border-white/10', 'text-gray-400');
+      btn.style.borderColor = '';
+      btn.style.color       = '';
     }
   };
 
@@ -100,9 +100,9 @@ async function loadDetail(movieId) {
     document.getElementById('detail-votes').textContent      = detail.vote_count ? `(${detail.vote_count.toLocaleString()} votes)` : '';
     document.getElementById('detail-popularity').textContent = detail.popularity ? `Popularity: ${detail.popularity.toFixed(0)}` : '';
 
-    // Genres
+    // Genres — pakai CSS variable via inline style
     document.getElementById('detail-genres').innerHTML = (detail.genres || []).map(g =>
-      `<span class="text-xs px-2.5 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">${escHtml(g.name)}</span>`
+      `<span class="tag">${escHtml(g.name)}</span>`
     ).join('');
 
     // TMDB link
@@ -123,7 +123,7 @@ async function loadDetail(movieId) {
 
   } catch (err) {
     document.getElementById('skeleton-detail').innerHTML =
-      '<div class="py-8 text-center text-gray-500">Gagal memuat data. Coba refresh halaman.</div>';
+      `<div class="py-8 text-center" style="color:var(--text-faint)">Gagal memuat data. Coba refresh halaman.</div>`;
     console.error(err);
   }
 }
@@ -134,10 +134,10 @@ const movieId = params.get('id');
 
 if (!movieId) {
   document.getElementById('skeleton-detail').innerHTML =
-    '<div class="py-8 text-center text-gray-500">Film tidak ditemukan. <a href="films.html" class="text-orange-400">← Back</a></div>';
+    `<div class="py-8 text-center" style="color:var(--text-faint)">Film tidak ditemukan. <a href="films.html" style="color:var(--accent)">← Back</a></div>`;
 } else if (!API_KEY) {
   document.getElementById('skeleton-detail').innerHTML =
-    '<div class="py-8 text-center text-gray-500">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>';
+    `<div class="py-8 text-center" style="color:var(--text-faint)">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
 } else {
   loadDetail(movieId);
 }
