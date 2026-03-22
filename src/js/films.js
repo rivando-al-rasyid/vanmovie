@@ -1,5 +1,16 @@
 import '../css/style.css';
 
+// Watchlist helpers (shared with detail.js via localStorage)
+function getMyList() {
+  try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
+}
+function saveMyList(list) {
+  localStorage.setItem('moviespace_mylist', JSON.stringify(list));
+}
+function isInList(id) {
+  return getMyList().some(f => f.id === id);
+}
+
 const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.themoviedb.org/3';
 const IMG_BASE = import.meta.env.VITE_IMG_BASE || 'https://image.tmdb.org/t/p/w500';
 const API_KEY  = import.meta.env.VITE_API_KEY  || '';
@@ -116,8 +127,8 @@ function renderFilms() {
           </div>
           <div class="text-xs text-gray-500 leading-relaxed">${escHtml(truncDesc)}</div>
           <div class="flex gap-2 mt-1">
-            <a href="https://www.themoviedb.org/movie/${film.id}" target="_blank" class="text-xs px-3 py-1.5 bg-orange-500 hover:bg-orange-400 text-black font-semibold rounded-lg transition-colors no-underline">View Details</a>
-            <button class="btn-watchlist text-xs px-3 py-1.5 border border-white/10 text-gray-400 hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent" data-title="${escAttr(film.title)}">Add to Watchlists</button>
+            <a href="detail.html?id=${film.id}" class="text-xs px-3 py-1.5 bg-orange-500 hover:bg-orange-400 text-black font-semibold rounded-lg transition-colors no-underline">View Details</a>
+            <button class="btn-watchlist text-xs px-3 py-1.5 border ${isInList(film.id) ? "border-orange-500 text-orange-400" : "border-white/10 text-gray-400"} hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent" data-id="${film.id}" data-film='${JSON.stringify({id:film.id,title:film.title,poster_path:film.poster_path,vote_average:film.vote_average,vote_count:film.vote_count,release_date:film.release_date,genre_ids:film.genre_ids,overview:film.overview})}'>${isInList(film.id) ? "✓ In My List" : "Add to My List"}</button>
           </div>
         </div>
       </div>
@@ -125,7 +136,14 @@ function renderFilms() {
   }).join('');
 
   list.querySelectorAll('.btn-watchlist').forEach(btn => {
-    btn.addEventListener('click', () => addToWatchlist(btn, btn.dataset.title));
+    btn.addEventListener('click', () => {
+      const filmData = JSON.parse(btn.dataset.film);
+      const list2 = getMyList();
+      const idx = list2.findIndex(f => f.id === filmData.id);
+      if (idx === -1) { list2.push(filmData); btn.textContent = '✓ In My List'; btn.classList.add('border-orange-500', 'text-orange-400'); btn.classList.remove('border-white/10', 'text-gray-400'); }
+      else { list2.splice(idx, 1); btn.textContent = 'Add to My List'; btn.classList.remove('border-orange-500', 'text-orange-400'); btn.classList.add('border-white/10', 'text-gray-400'); }
+      saveMyList(list2);
+    });
   });
 }
 
