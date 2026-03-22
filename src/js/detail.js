@@ -74,13 +74,16 @@ async function loadDetail(movieId) {
 
     document.title = `MovieSpace — ${detail.title}`;
 
+    // Breadcrumb
+    document.getElementById('breadcrumb-title').textContent = detail.title;
+
     // Poster
     const poster = document.getElementById('detail-poster');
     if (detail.poster_path) {
       poster.src = IMG_BASE + detail.poster_path;
       poster.alt = detail.title;
     } else {
-      poster.style.display = 'none';
+      poster.closest('div').style.display = 'none';
     }
 
     // Basic info

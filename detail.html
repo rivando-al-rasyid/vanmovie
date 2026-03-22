@@ -31,78 +31,91 @@
   </nav>
 </header>
 
-<!-- Back Button -->
-<div class="max-w-6xl mx-auto px-6 pt-20 pb-2">
-  <a href="javascript:history.back()" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors no-underline">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-    Back
-  </a>
-</div>
-
 <!-- Detail Content -->
-<main class="max-w-6xl mx-auto px-6 pb-16" id="detail-container">
+<main class="max-w-6xl mx-auto px-6 pt-20 pb-16" id="detail-container">
+
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 text-sm mb-6">
+    <a href="films.html" class="text-gray-400 hover:text-white transition-colors no-underline">All Films</a>
+    <span class="text-gray-600">/</span>
+    <span id="breadcrumb-title" class="text-gray-500 truncate max-w-xs"></span>
+  </div>
+
   <!-- Skeleton -->
   <div id="skeleton-detail">
-    <div class="flex flex-col md:flex-row gap-8 mt-4">
-      <div class="skeleton-line shrink-0 rounded-xl">
-
-      </div>
+    <div class="w-full rounded-2xl overflow-hidden">
+      <div class="skeleton-line w-full rounded-2xl" style="height:420px;margin-bottom:0"></div>
+    </div>
+    <div class="flex flex-col gap-3 mt-5">
+      <div class="skeleton-line" style="width:55%;height:24px"></div>
+      <div class="skeleton-line" style="width:30%;height:14px"></div>
+      <div class="skeleton-line" style="width:90%;height:12px;margin-top:8px"></div>
+      <div class="skeleton-line" style="width:80%;height:12px"></div>
     </div>
   </div>
 
   <!-- Film Detail (hidden until loaded) -->
   <div id="film-detail" class="hidden">
 
-    <!-- Main Info -->
-    <div class="flex flex-col md:flex-row gap-8 -mt-4 relative z-10">
-      <!-- Poster -->
-      <div class="shrink-0">
-        <img id="detail-poster" class="w-44 h-64 md:w-52 md:h-76 object-cover rounded-xl shadow-2xl border border-white/10 bg-[#1a1a1a]" src="" alt="" loading="lazy">
+    <!-- Poster besar full-width -->
+    <div class="w-full rounded-2xl overflow-hidden mb-6 bg-[#1a1a1a]">
+      <img
+        id="detail-poster"
+        class="w-full object-cover object-top"
+        style="max-height: 520px;"
+        src="" alt="" loading="lazy"
+      >
+    </div>
+
+    <!-- Info -->
+    <div class="flex flex-col gap-3">
+      <h1 id="detail-title" class="text-2xl md:text-3xl font-bold text-white m-0"></h1>
+
+      <div class="flex flex-wrap items-center gap-2 text-sm">
+        <span id="detail-year" class="text-gray-400"></span>
+        <span class="text-gray-600">·</span>
+        <span id="detail-runtime" class="text-gray-400"></span>
+        <span class="text-gray-600">·</span>
+        <span id="detail-language" class="text-xs px-2 py-0.5 border border-white/10 rounded text-gray-400 uppercase"></span>
       </div>
 
-      <!-- Info -->
-      <div class="flex flex-col gap-3">
-        <h1 id="detail-title" class="text-2xl md:text-3xl font-bold text-white m-0"></h1>
+      <!-- Genres -->
+      <div id="detail-genres" class="flex flex-wrap gap-1.5"></div>
 
-        <div class="flex flex-wrap items-center gap-3 text-sm">
-          <span id="detail-year" class="text-gray-400"></span>
-          <span class="text-gray-600">·</span>
-          <span id="detail-runtime" class="text-gray-400"></span>
-          <span class="text-gray-600">·</span>
-          <span id="detail-language" class="text-xs px-2 py-0.5 border border-white/10 rounded text-gray-400 uppercase"></span>
+      <!-- Rating -->
+      <div class="flex items-center gap-4 flex-wrap">
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs px-1.5 py-0.5 bg-[#032541] text-blue-300 rounded font-bold">TMDB</span>
+          <span id="detail-rating" class="text-orange-400 font-bold text-lg"></span>
+          <span id="detail-votes" class="text-xs text-gray-500"></span>
         </div>
+        <div id="detail-popularity" class="text-xs text-gray-500"></div>
+      </div>
 
-        <!-- Genres -->
-        <div id="detail-genres" class="flex flex-wrap gap-1.5"></div>
+      <!-- Tagline -->
+      <p id="detail-tagline" class="text-sm italic text-gray-500 m-0"></p>
 
-        <!-- Rating Row -->
-        <div class="flex items-center gap-4 flex-wrap">
-          <div class="flex items-center gap-1.5">
-            <span class="text-xs px-1.5 py-0.5 bg-[#032541] text-blue-300 rounded font-bold">TMDB</span>
-            <span id="detail-rating" class="text-orange-400 font-bold text-lg"></span>
-            <span id="detail-votes" class="text-xs text-gray-500"></span>
-          </div>
-          <div id="detail-popularity" class="text-xs text-gray-500"></div>
-        </div>
+      <!-- Overview -->
+      <p id="detail-overview" class="text-sm text-gray-300 leading-relaxed m-0"></p>
 
-        <!-- Tagline -->
-        <p id="detail-tagline" class="text-sm italic text-gray-500 m-0"></p>
-
-        <!-- Overview -->
-        <p id="detail-overview" class="text-sm text-gray-300 leading-relaxed m-0 max-w-2xl"></p>
-
-        <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-3 mt-2">
-          <a id="btn-tmdb" href="#" target="_blank" class="inline-flex items-center gap-2 text-sm px-4 py-2 bg-orange-500 hover:bg-orange-400 text-black font-semibold rounded-lg transition-colors no-underline">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6v2H5v11h11v-5h2v6a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1h6zm11-3v8l-3.528-3.535L9.828 15l-1.414-1.414 7.64-7.644L12 2h9z"/></svg>
-            View on TMDB
-          </a>
-          <button id="btn-mylist" class="text-sm px-4 py-2 border border-white/10 text-gray-400 hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent">Add to My List</button>
-        </div>
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-3 mt-2">
+        <a id="btn-tmdb" href="#" target="_blank" class="inline-flex items-center gap-2 text-sm px-4 py-2 bg-orange-500 hover:bg-orange-400 text-black font-semibold rounded-lg transition-colors no-underline">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6v2H5v11h11v-5h2v6a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1h6zm11-3v8l-3.528-3.535L9.828 15l-1.414-1.414 7.64-7.644L12 2h9z"/></svg>
+          View on TMDB
+        </a>
+        <button id="btn-mylist" class="text-sm px-4 py-2 border border-white/10 text-gray-400 hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent">Add to My List</button>
       </div>
     </div>
 
   </div>
+
+  <!-- Error State -->
+  <div id="detail-error" class="hidden py-16 text-center text-gray-500">
+    <p class="text-lg mb-2">Film tidak ditemukan</p>
+    <a href="films.html" class="text-orange-400 hover:text-orange-300 text-sm no-underline">← Back to All Films</a>
+  </div>
+
 </main>
 
 <script type="module" src="./src/js/detail.js"></script>
