@@ -1,3 +1,5 @@
+import '../css/style.css';
+
 // Dummy registered emails for demo
 const registeredEmails = ['test@example.com', 'user@moviespace.com'];
 
@@ -39,3 +41,8 @@ function handleSignup() {
     alert('Account created! Welcome to MovieSpace 🎬');
   }
 }
+
+// Attach handler (replaces inline onclick in HTML)
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('.btn-signup')?.addEventListener('click', handleSignup);
+});

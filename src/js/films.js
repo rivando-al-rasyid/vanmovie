@@ -1,26 +1,21 @@
-// --- Config Loader ---
-// Fetches env vars from the Express server (set in .env)
-async function loadConfig() {
-  const res = await fetch('/config.json');
-  if (!res.ok) throw new Error('Failed to load config from server');
-  return res.json();
-}
+import '../css/style.css';
+
+// --- Config from Vite env (replaces Express /config.json endpoint) ---
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.themoviedb.org/3';
+const IMG_BASE = import.meta.env.VITE_IMG_BASE || 'https://image.tmdb.org/t/p/w500';
+const API_KEY  = import.meta.env.VITE_API_KEY  || '';
 
 // --- State ---
-let BASE_URL = '';
-let IMG_BASE = '';
-let API_KEY = '';
-
-let allFilms = [];
-let filteredFilms = [];
-let genres = {};
-let activeGenreId = 0;
-let sortDesc = true;
-let currentPage = 1;
-let perPage = 50;
-let searchQuery = '';
-let searchTimer = null;
-let totalTMDBPages = 1;
+let allFilms        = [];
+let filteredFilms   = [];
+let genres          = {};
+let activeGenreId   = 0;
+let sortDesc        = true;
+let currentPage     = 1;
+let perPage         = 50;
+let searchQuery     = '';
+let searchTimer     = null;
+let totalTMDBPages  = 1;
 let currentTMDBPage = 1;
 
 // --- API ---
@@ -56,8 +51,8 @@ async function loadFilms() {
     }
 
     totalTMDBPages = Math.min(data.total_pages || 1, 250);
-    allFilms = data.results || [];
-    filteredFilms = allFilms;
+    allFilms       = data.results || [];
+    filteredFilms  = allFilms;
 
     renderFilms();
     renderPagination(data.total_results || 0);
@@ -73,9 +68,9 @@ function buildGenreMenu(list) {
   menu.innerHTML = '<div class="dropdown-item" data-genre-id="0">All Genres</div>';
   list.forEach(g => {
     const el = document.createElement('div');
-    el.className = 'dropdown-item';
-    el.textContent = g.name;
-    el.dataset.genreId = g.id;
+    el.className       = 'dropdown-item';
+    el.textContent     = g.name;
+    el.dataset.genreId   = g.id;
     el.dataset.genreName = g.name;
     menu.appendChild(el);
   });
@@ -95,21 +90,21 @@ function renderFilms() {
     return;
   }
 
-  const start = (currentPage - 1) * perPage;
+  const start     = (currentPage - 1) * perPage;
   const pageFilms = filteredFilms.slice(start, start + perPage);
 
   list.innerHTML = pageFilms.map(film => {
-    const poster = film.poster_path ? IMG_BASE + film.poster_path : '';
-    const rating = film.vote_average ? film.vote_average.toFixed(1) : 'N/A';
-    const year = film.release_date ? film.release_date.split('-')[0] : '';
+    const poster     = film.poster_path ? IMG_BASE + film.poster_path : '';
+    const rating     = film.vote_average ? film.vote_average.toFixed(1) : 'N/A';
+    const year       = film.release_date ? film.release_date.split('-')[0] : '';
     const filmGenres = (film.genre_ids || []).map(id => genres[id]).filter(Boolean);
-    const desc = film.overview || 'No description available.';
-    const truncDesc = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
+    const desc       = film.overview || 'No description available.';
+    const truncDesc  = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
 
     return `
       <div class="film-item">
         ${poster
-          ? `<img class="film-poster" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='#1a1a1a';this.src=''">`
+          ? `<img class="film-poster" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='#1a1a1a';this.src=''">` 
           : `<div class="film-poster" style="display:flex;align-items:center;justify-content:center;color:#333;font-size:0.7rem;text-align:center;padding:0.5rem;">No Poster</div>`
         }
         <div class="film-info">
@@ -136,23 +131,23 @@ function renderFilms() {
 }
 
 function renderPagination(totalResults) {
-  const localPages = Math.ceil(filteredFilms.length / perPage);
-  const grandTotal = Math.min(totalResults, 5000);
+  const localPages  = Math.ceil(filteredFilms.length / perPage);
+  const grandTotal  = Math.min(totalResults, 5000);
 
   document.getElementById('page-title').textContent = `All Films (${grandTotal.toLocaleString()}+)`;
 
   const startItem = (currentTMDBPage - 1) * 20 + (currentPage - 1) * perPage + 1;
-  const endItem = Math.min(startItem + perPage - 1, grandTotal);
+  const endItem   = Math.min(startItem + perPage - 1, grandTotal);
   document.getElementById('pagination-info').textContent = `${startItem} - ${endItem} of ${grandTotal.toLocaleString()}`;
 
   const btns = document.getElementById('page-btns');
   btns.innerHTML = '';
 
   const makeBtn = (html, disabled, title, onClick) => {
-    const btn = document.createElement('button');
-    btn.className = 'page-btn';
-    btn.innerHTML = html;
-    btn.disabled = disabled;
+    const btn      = document.createElement('button');
+    btn.className  = 'page-btn';
+    btn.innerHTML  = html;
+    btn.disabled   = disabled;
     if (title) btn.title = title;
     btn.addEventListener('click', onClick);
     return btn;
@@ -211,9 +206,9 @@ function toggleGenre() {
 }
 
 function filterGenre(id, name) {
-  activeGenreId = id;
+  activeGenreId   = id;
   currentTMDBPage = 1;
-  currentPage = 1;
+  currentPage     = 1;
   document.getElementById('genre-menu').classList.remove('open');
 
   const btn = document.getElementById('genre-btn');
@@ -228,7 +223,7 @@ function toggleSort() {
   document.getElementById('sort-btn').innerHTML =
     `SORT BY TMDB ${sortDesc ? '↓' : '↑'} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
   currentTMDBPage = 1;
-  currentPage = 1;
+  currentPage     = 1;
   if (!searchQuery) loadFilms();
 }
 
@@ -237,35 +232,35 @@ function onSearch() {
   searchQuery = document.getElementById('search-input').value;
   searchTimer = setTimeout(() => {
     currentTMDBPage = 1;
-    currentPage = 1;
+    currentPage     = 1;
     loadFilms();
   }, 500);
 }
 
 function onPerPageChange() {
-  perPage = parseInt(document.getElementById('per-page').value, 10);
+  perPage     = parseInt(document.getElementById('per-page').value, 10);
   currentPage = 1;
   renderFilms();
 }
 
 function addToWatchlist(btn, title) {
-  btn.textContent = '✓ Added';
-  btn.style.borderColor = 'var(--orange)';
-  btn.style.color = 'var(--orange)';
+  btn.textContent          = '✓ Added';
+  btn.style.borderColor    = 'var(--orange)';
+  btn.style.color          = 'var(--orange)';
   setTimeout(() => {
-    btn.textContent = 'Add to Watchlists';
+    btn.textContent       = 'Add to Watchlists';
     btn.style.borderColor = '';
-    btn.style.color = '';
+    btn.style.color       = '';
   }, 2000);
 }
 
 // --- Utilities ---
 function escHtml(str) {
   return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g,  '&amp;')
+    .replace(/</g,  '&lt;')
+    .replace(/>/g,  '&gt;')
+    .replace(/"/g,  '&quot;');
 }
 
 function escAttr(str) {
@@ -292,19 +287,13 @@ function initEventListeners() {
 
 // --- Init ---
 async function init() {
+  if (!API_KEY) {
+    document.getElementById('film-list').innerHTML =
+      '<div class="no-results">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>';
+    return;
+  }
+
   try {
-    // Load config from server (reads from .env)
-    const config = await loadConfig();
-    BASE_URL = config.BASE_URL;
-    IMG_BASE = config.IMG_BASE;
-    API_KEY = config.API_KEY;
-
-    if (!API_KEY) {
-      document.getElementById('film-list').innerHTML =
-        '<div class="no-results">⚠️ API Key belum diset. Tambahkan API_KEY di file .env</div>';
-      return;
-    }
-
     const genreRes = await tmdbFetch('/genre/movie/list');
     genreRes.genres.forEach(g => (genres[g.id] = g.name));
     buildGenreMenu(genreRes.genres);

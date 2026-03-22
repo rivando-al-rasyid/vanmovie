@@ -4,14 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieSpace — All Films</title>
-  <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
 
 <!-- Navbar -->
 <nav>
   <div class="nav-inner">
-    <a href="login.html" class="nav-logo">
+    <a href="index.html" class="nav-logo">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
         <path d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM4.4 11.53C4.19 12.16 4.248 12.845 4.548 13.436C4.848 14.027 5.37 14.474 6 14.68C7.32 15.1 8.73 14.39 9.15 13.07C9.355 12.44 9.302 11.755 9.002 11.164C8.702 10.573 8.18 10.126 7.55 9.92C6.24 9.5 4.82 10.21 4.4 11.53ZM19.61 11.5C19.18 10.21 17.77 9.5 16.46 9.92C16.146 10.02 15.856 10.18 15.605 10.393C15.354 10.606 15.148 10.866 14.998 11.159C14.848 11.452 14.758 11.772 14.733 12.1C14.707 12.428 14.747 12.758 14.85 13.07C15.056 13.7 15.503 14.222 16.094 14.522C16.685 14.822 17.37 14.875 18 14.67C19.31 14.25 20.03 12.83 19.61 11.5ZM7.31 20.46C8.42 21.28 10 21.03 10.8 19.91C11.61 18.79 11.36 17.23 10.24 16.42C9.704 16.032 9.035 15.872 8.382 15.975C7.728 16.078 7.141 16.436 6.75 16.97C5.94 18.09 6.19 19.65 7.31 20.46ZM16.7 20.46C17.82 19.65 18.07 18.09 17.26 16.97C17.068 16.704 16.825 16.478 16.545 16.306C16.265 16.134 15.954 16.019 15.63 15.968C15.305 15.917 14.974 15.931 14.655 16.008C14.335 16.086 14.035 16.226 13.77 16.42C13.504 16.612 13.278 16.855 13.106 17.135C12.934 17.414 12.818 17.725 12.766 18.049C12.714 18.373 12.727 18.704 12.803 19.024C12.879 19.343 13.017 19.644 13.21 19.91C14 21.03 15.59 21.27 16.7 20.46ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z" fill="#FFA500"/>
       </svg>
@@ -20,7 +19,7 @@
     <div class="nav-right">
       <a href="#" class="nav-link active">All Films</a>
       <a href="#" class="nav-link">My Watchlists</a>
-      <a href="login.html" class="btn-nav">Login</a>
+      <a href="index.html" class="btn-nav">Login</a>
     </div>
   </div>
 </nav>
@@ -31,22 +30,22 @@
 
   <div class="filter-bar">
     <div class="dropdown-wrapper">
-      <button class="filter-btn" id="genre-btn" onclick="toggleGenre()">
+      <button class="filter-btn" id="genre-btn">
         GENRE
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <div class="dropdown-menu" id="genre-menu">
-        <div class="dropdown-item" onclick="filterGenre(0,'All')">All Genres</div>
+        <div class="dropdown-item" data-genre-id="0">All Genres</div>
       </div>
     </div>
 
-    <button class="filter-btn" id="sort-btn" onclick="toggleSort()">
+    <button class="filter-btn" id="sort-btn">
       SORT BY IMDB
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
     </button>
 
     <div class="filter-right">
-      <input class="search-input" id="search-input" type="text" placeholder="Cari film..." oninput="onSearch()" />
+      <input class="search-input" id="search-input" type="text" placeholder="Cari film..." />
     </div>
   </div>
 
@@ -61,7 +60,7 @@
   <div class="pagination">
     <div class="items-per-page">
       Items per page:
-      <select id="per-page" onchange="onPerPageChange()">
+      <select id="per-page">
         <option value="10">10</option>
         <option value="20">20</option>
         <option value="50" selected>50</option>
@@ -72,6 +71,6 @@
   </div>
 </div>
 
-<script type="module" src="../js/films.js"></script>
+<script type="module" src="./src/js/films.js"></script>
 </body>
 </html>
