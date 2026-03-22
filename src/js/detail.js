@@ -123,7 +123,7 @@ async function loadDetail(movieId) {
 
   } catch (err) {
     document.getElementById('skeleton-detail').innerHTML =
-      `<div class="py-8 text-center" style="color:var(--text-faint)">Gagal memuat data. Coba refresh halaman.</div>`;
+      `<div class="py-8 text-center" >Gagal memuat data. Coba refresh halaman.</div>`;
     console.error(err);
   }
 }
@@ -134,10 +134,10 @@ const movieId = params.get('id');
 
 if (!movieId) {
   document.getElementById('skeleton-detail').innerHTML =
-    `<div class="py-8 text-center" style="color:var(--text-faint)">Film tidak ditemukan. <a href="films.html" style="color:var(--accent)">← Back</a></div>`;
+    `<div class="py-8 text-center" >Film tidak ditemukan. <a href="films.html" >← Back</a></div>`;
 } else if (!API_KEY) {
   document.getElementById('skeleton-detail').innerHTML =
-    `<div class="py-8 text-center" style="color:var(--text-faint)">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
+    `<div class="py-8 text-center" >⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
 } else {
   loadDetail(movieId);
 }

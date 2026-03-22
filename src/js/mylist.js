@@ -50,15 +50,15 @@ function renderMyList() {
       <div class="flex gap-4 rounded-xl p-4 transition-colors" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)" data-id="${film.id}" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
         ${posterEl}
         <div class="flex flex-col gap-1.5 min-w-0 flex-1">
-          <div class="text-sm font-semibold" style="color:var(--text)">
-            ${escHtml(film.title)} <span class="font-normal text-xs" style="color:var(--text-faint)">${year}</span>
+          <div class="text-sm font-semibold" >
+            ${escHtml(film.title)} <span class="font-normal text-xs" >${year}</span>
           </div>
           <div class="flex items-center gap-2 text-xs">
             <span class="tmdb-badge">IMDb</span>
-            <span class="font-semibold" style="color:var(--accent)">${rating} ★</span>
-            <span style="color:var(--text-faint)">(${(film.vote_count || 0).toLocaleString()} votes)</span>
+            <span class="font-semibold" >${rating} ★</span>
+            <span >(${(film.vote_count || 0).toLocaleString()} votes)</span>
           </div>
-          <div class="text-xs leading-relaxed" style="color:var(--text-muted)">${escHtml(truncDesc)}</div>
+          <div class="text-xs leading-relaxed" >${escHtml(truncDesc)}</div>
           <div class="flex gap-2 mt-1">
             <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
             <button class="btn-remove text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer bg-transparent" style="border:1px solid var(--border-subtle);color:var(--text-muted)" onmouseover="this.style.borderColor='var(--error)';this.style.color='var(--error)'" onmouseout="this.style.borderColor='var(--border-subtle)';this.style.color='var(--text-muted)'" data-id="${film.id}">

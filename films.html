@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="en" style="background-color:var(--bg)">
+<html lang="en" >
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MovieSpace — All Films</title>
   <link rel="stylesheet" href="/src/css/style.css">
 </head>
-<body class="min-h-screen" style="background-color:var(--bg);color:var(--text)">
+<body class="min-h-screen" >
 
 <!-- Navbar -->
 <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
   <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-    <a href="index.html" class="flex items-center gap-2 font-semibold no-underline" style="color:var(--text)">
+    <a href="index.html" class="flex items-center gap-2 font-semibold no-underline" >
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z" fill="var(--accent)"/></svg>
       <span>MovieSpace</span>
     </a>
@@ -25,7 +25,7 @@
 
 <!-- Main Film List -->
 <main class="max-w-6xl mx-auto px-6 pt-20 pb-12" id="main-container">
-  <h1 class="text-xl font-bold mb-5" style="color:var(--text)" id="page-title">All Films</h1>
+  <h1 class="text-xl font-bold mb-5"  id="page-title">All Films</h1>
 
   <!-- Filter & Search Bar -->
   <section>
@@ -63,15 +63,15 @@
 
   <!-- Pagination -->
   <nav class="flex items-center justify-end gap-4 mt-6 pt-4 divider border-t">
-    <div class="text-sm flex items-center gap-1.5 shrink-0" style="color:var(--text-faint)">
+    <div class="text-sm flex items-center gap-1.5 shrink-0" >
       <label for="per-page">items per page:</label>
-      <select id="per-page" class="bg-transparent border-none text-sm outline-none cursor-pointer" style="color:var(--text-muted)">
+      <select id="per-page" class="bg-transparent border-none text-sm outline-none cursor-pointer" >
         <option value="10" selected>10</option>
         <option value="20">20</option>
         <option value="50">50</option>
       </select>
     </div>
-    <p id="pagination-info" class="text-sm tabular-nums" style="color:var(--text-muted)"></p>
+    <p id="pagination-info" class="text-sm tabular-nums" ></p>
     <div class="flex items-center gap-3" id="page-btns"></div>
   </nav>
 </main>

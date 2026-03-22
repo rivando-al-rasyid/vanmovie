@@ -65,7 +65,7 @@ async function loadFilms() {
     renderPagination(data.total_results || 0);
   } catch {
     document.getElementById('film-list').innerHTML =
-      `<div class="py-8 text-center" style="color:var(--text-faint)">Gagal memuat data. Coba refresh halaman.</div>`;
+      `<div class="py-8 text-center" >Gagal memuat data. Coba refresh halaman.</div>`;
   }
 }
 
@@ -111,18 +111,18 @@ function filmCardHTML(film) {
     <div class="flex gap-4 rounded-xl p-4 transition-colors" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       ${posterEl}
       <div class="flex flex-col gap-1.5 min-w-0">
-        <div class="text-sm font-semibold" style="color:var(--text)">
-          ${escHtml(film.title)} <span class="font-normal text-xs" style="color:var(--text-faint)">${year}</span>
+        <div class="text-sm font-semibold" >
+          ${escHtml(film.title)} <span class="font-normal text-xs" >${year}</span>
         </div>
         <div class="flex flex-wrap gap-1">
           ${filmGenres.map(g => `<span class="tag">${g}</span>`).join('')}
         </div>
         <div class="flex items-center gap-2 text-xs">
           <span class="tmdb-badge">IMDb</span>
-          <span class="font-semibold" style="color:var(--accent)">${rating} ★</span>
-          <span style="color:var(--text-faint)">(${(film.vote_count || 0).toLocaleString()} votes)</span>
+          <span class="font-semibold" >${rating} ★</span>
+          <span >(${(film.vote_count || 0).toLocaleString()} votes)</span>
         </div>
-        <div class="text-xs leading-relaxed" style="color:var(--text-muted)">${escHtml(truncDesc)}</div>
+        <div class="text-xs leading-relaxed" >${escHtml(truncDesc)}</div>
         <div class="flex gap-2 mt-1">
           <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
           <button class="btn-watchlist text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer bg-transparent" ${watchlistStyle} data-id="${film.id}" data-film='${escAttr(filmJSON)}'>${inList ? 'Remove from Watchlist' : 'Add to Watchlists'}</button>
@@ -135,7 +135,7 @@ function filmCardHTML(film) {
 function renderFilms() {
   const list = document.getElementById('film-list');
   if (!filteredFilms.length) {
-    list.innerHTML = `<div class="py-8 text-center" style="color:var(--text-faint)">Tidak ada film ditemukan.</div>`;
+    list.innerHTML = `<div class="py-8 text-center" >Tidak ada film ditemukan.</div>`;
     document.getElementById('page-title').textContent = 'All Films (0)';
     return;
   }
@@ -304,7 +304,7 @@ function initEventListeners() {
 async function init() {
   if (!API_KEY) {
     document.getElementById('film-list').innerHTML =
-      `<div class="py-8 text-center" style="color:var(--text-faint)">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
+      `<div class="py-8 text-center" >⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
     return;
   }
 
@@ -316,7 +316,7 @@ async function init() {
     await loadFilms();
   } catch {
     document.getElementById('film-list').innerHTML =
-      `<div class="py-8 text-center" style="color:var(--text-faint)">Gagal memuat data dari TMDB.</div>`;
+      `<div class="py-8 text-center" >Gagal memuat data dari TMDB.</div>`;
   }
 }
 
