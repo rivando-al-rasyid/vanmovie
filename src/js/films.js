@@ -130,57 +130,44 @@ function renderFilms() {
 }
 
 function renderPagination(totalResults) {
-  const localPages  = Math.ceil(filteredFilms.length / perPage);
-  const grandTotal  = Math.min(totalResults, 5000);
+  const localPages = Math.ceil(filteredFilms.length / perPage);
+  const grandTotal = Math.min(totalResults, 5000);
 
   document.getElementById('page-title').textContent = `All Films (${grandTotal.toLocaleString()}+)`;
 
   const startItem = (currentTMDBPage - 1) * 20 + (currentPage - 1) * perPage + 1;
   const endItem   = Math.min(startItem + perPage - 1, grandTotal);
-  document.getElementById('pagination-info').textContent = `${startItem} - ${endItem} of ${grandTotal.toLocaleString()}`;
+  document.getElementById('pagination-info').textContent =
+    `${startItem} - ${endItem} of ${grandTotal.toLocaleString()}`;
 
   const btns = document.getElementById('page-btns');
   btns.innerHTML = '';
 
-  const makeBtn = (html, disabled, title, onClick) => {
-    const btn      = document.createElement('button');
-    btn.className  = 'page-btn w-8 h-8 flex items-center justify-center rounded border border-white/10 text-xs text-gray-400 hover:border-orange-500 hover:text-orange-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors bg-[#1a1a1a] cursor-pointer';
-    btn.innerHTML  = html;
-    btn.disabled   = disabled;
-    if (title) btn.title = title;
+  const isFirst = currentPage <= 1 && currentTMDBPage <= 1;
+  const isLast  = currentPage >= localPages && currentTMDBPage >= totalTMDBPages;
+
+  const makeArrow = (symbol, disabled, onClick) => {
+    const btn     = document.createElement('button');
+    btn.innerHTML = symbol;
+    btn.disabled  = disabled;
+    btn.className = 'text-gray-400 hover:text-white disabled:opacity-25 disabled:cursor-not-allowed transition-colors text-lg leading-none cursor-pointer bg-transparent border-none p-0';
     btn.addEventListener('click', onClick);
     return btn;
   };
 
-  btns.append(
-    makeBtn('&#171;', currentTMDBPage <= 1, 'Previous batch', () => {
-      currentTMDBPage--; currentPage = 1; loadFilms(); scrollToTop();
-    }),
-    makeBtn('&#8249;', currentPage <= 1 && currentTMDBPage <= 1, null, () => {
-      if (currentPage > 1) { currentPage--; renderFilms(); renderPagination(totalResults); }
-      else if (currentTMDBPage > 1) { currentTMDBPage--; currentPage = Math.ceil(20 / perPage); loadFilms(); }
-      scrollToTop();
-    }),
-  );
+  // Prev ‹
+  btns.appendChild(makeArrow('&#8249;', isFirst, () => {
+    if (currentPage > 1) { currentPage--; renderFilms(); renderPagination(totalResults); }
+    else if (currentTMDBPage > 1) { currentTMDBPage--; currentPage = Math.ceil(20 / perPage); loadFilms(); }
+    scrollToTop();
+  }));
 
-  for (let i = 1; i <= localPages; i++) {
-    const btn = makeBtn(String(i), false, null, () => {
-      currentPage = i; renderFilms(); renderPagination(totalResults); scrollToTop();
-    });
-    if (i === currentPage) btn.classList.add('active');
-    btns.appendChild(btn);
-  }
-
-  btns.append(
-    makeBtn('&#8250;', currentPage >= localPages && currentTMDBPage >= totalTMDBPages, null, () => {
-      if (currentPage < localPages) { currentPage++; renderFilms(); renderPagination(totalResults); }
-      else if (currentTMDBPage < totalTMDBPages) { currentTMDBPage++; currentPage = 1; loadFilms(); }
-      scrollToTop();
-    }),
-    makeBtn('&#187;', currentTMDBPage >= totalTMDBPages, 'Next batch', () => {
-      currentTMDBPage++; currentPage = 1; loadFilms(); scrollToTop();
-    }),
-  );
+  // Next ›
+  btns.appendChild(makeArrow('&#8250;', isLast, () => {
+    if (currentPage < localPages) { currentPage++; renderFilms(); renderPagination(totalResults); }
+    else if (currentTMDBPage < totalTMDBPages) { currentTMDBPage++; currentPage = 1; loadFilms(); }
+    scrollToTop();
+  }));
 }
 
 function showSkeleton() {
