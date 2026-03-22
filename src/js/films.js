@@ -128,7 +128,7 @@ function renderFilms() {
           <div class="text-xs text-gray-500 leading-relaxed">${escHtml(truncDesc)}</div>
           <div class="flex gap-2 mt-1">
             <a href="detail.html?id=${film.id}" class="text-xs px-3 py-1.5 bg-orange-500 hover:bg-orange-400 text-black font-semibold rounded-lg transition-colors no-underline">View Details</a>
-            <button class="btn-watchlist text-xs px-3 py-1.5 border ${isInList(film.id) ? "border-orange-500 text-orange-400" : "border-white/10 text-gray-400"} hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent" data-id="${film.id}" data-film='${JSON.stringify({id:film.id,title:film.title,poster_path:film.poster_path,vote_average:film.vote_average,vote_count:film.vote_count,release_date:film.release_date,genre_ids:film.genre_ids,overview:film.overview})}'>${isInList(film.id) ? "✓ In My List" : "Add to My List"}</button>
+            <button class="btn-watchlist text-xs px-3 py-1.5 border ${isInList(film.id) ? "border-orange-500 text-orange-400" : "border-white/10 text-gray-400"} hover:border-orange-500 hover:text-orange-400 rounded-lg transition-colors cursor-pointer bg-transparent" data-id="${film.id}" data-film='${JSON.stringify({id:film.id,title:film.title,poster_path:film.poster_path,vote_average:film.vote_average,vote_count:film.vote_count,release_date:film.release_date,genre_ids:film.genre_ids,overview:film.overview})}'>${isInList(film.id) ? "Remove from Watchlist" : "Add to Watchlists"}</button>
           </div>
         </div>
       </div>
@@ -140,8 +140,8 @@ function renderFilms() {
       const filmData = JSON.parse(btn.dataset.film);
       const list2 = getMyList();
       const idx = list2.findIndex(f => f.id === filmData.id);
-      if (idx === -1) { list2.push(filmData); btn.textContent = '✓ In My List'; btn.classList.add('border-orange-500', 'text-orange-400'); btn.classList.remove('border-white/10', 'text-gray-400'); }
-      else { list2.splice(idx, 1); btn.textContent = 'Add to My List'; btn.classList.remove('border-orange-500', 'text-orange-400'); btn.classList.add('border-white/10', 'text-gray-400'); }
+      if (idx === -1) { list2.push(filmData); btn.textContent = 'Remove from Watchlist'; btn.classList.add('border-orange-500', 'text-orange-400'); btn.classList.remove('border-white/10', 'text-gray-400'); }
+      else { list2.splice(idx, 1); btn.textContent = 'Add to Watchlists'; btn.classList.remove('border-orange-500', 'text-orange-400'); btn.classList.add('border-white/10', 'text-gray-400'); }
       saveMyList(list2);
     });
   });

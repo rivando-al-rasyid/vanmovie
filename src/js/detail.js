@@ -42,11 +42,11 @@ function bindMyListBtn(filmData) {
 
   const update = () => {
     if (isInList(filmData.id)) {
-      btn.textContent = '✓ In My List';
+      btn.textContent = 'Remove from Watchlist';
       btn.classList.add('border-orange-500', 'text-orange-400');
       btn.classList.remove('border-white/10', 'text-gray-400');
     } else {
-      btn.textContent = 'Add to My List';
+      btn.textContent = 'Add to Watchlists';
       btn.classList.remove('border-orange-500', 'text-orange-400');
       btn.classList.add('border-white/10', 'text-gray-400');
     }
