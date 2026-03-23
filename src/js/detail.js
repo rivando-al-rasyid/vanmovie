@@ -1,14 +1,8 @@
 import '../css/style.css';
-import { fetchMovieDetail, imgUrl, toFilmData } from './fetchData.js';
+import { fetchMovieDetail, imgUrl, toFilmData, escHtml } from './fetchData.js';
 import { bindMyListBtn } from './addlist.js';
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 function formatRuntime(min) {
   if (!min) return '';
   const h = Math.floor(min / 60), m = min % 60;

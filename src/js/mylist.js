@@ -1,19 +1,6 @@
 import '../css/style.css';
-import { imgUrl } from './fetchData.js';
-
-// ── Watchlist helpers ─────────────────────────────────────────────────────────
-function getMyList() {
-  try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
-}
-function saveMyList(list) {
-  localStorage.setItem('moviespace_mylist', JSON.stringify(list));
-}
-
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
+import { imgUrl, escHtml } from './fetchData.js';
+import { getMyList, saveMyList } from './addlist.js';
 
 // ── Render ────────────────────────────────────────────────────────────────────
 function renderMyList() {

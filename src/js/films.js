@@ -2,11 +2,11 @@ import '../css/style.css';
 import {
   fetchMovies,
   fetchGenreList,
-  searchMovies,
   imgUrl,
   toFilmData,
+  escHtml,
 } from './fetchData.js';
-import { isInList, createWatchlistBtn } from './addlist.js';
+import { createWatchlistBtn } from './addlist.js';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let allFilms        = [];
@@ -16,25 +16,18 @@ let activeGenreId   = 0;
 let sortDesc        = true;
 let currentPage     = 1;
 let perPage         = 50;
-let searchQuery     = '';
-let searchTimer     = null;
 let totalTMDBPages  = 1;
 let currentTMDBPage = 1;
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 async function loadFilms() {
   try {
-    let data;
-    if (searchQuery.trim()) {
-      data = await searchMovies(searchQuery, currentTMDBPage);
-    } else {
-      data = await fetchMovies({
-        page:     currentTMDBPage,
-        sortDesc,
-        genreId:  activeGenreId,
-        minVotes: 500,
-      });
-    }
+    const data = await fetchMovies({
+      page:     currentTMDBPage,
+      sortDesc,
+      genreId:  activeGenreId,
+      minVotes: 500,
+    });
 
     totalTMDBPages = Math.min(data.total_pages || 1, 250);
     allFilms       = data.results || [];
@@ -119,10 +112,9 @@ function renderFilms() {
 
   // Mount watchlist buttons via addlist.js createWatchlistBtn
   pageFilms.forEach(film => {
-    const card    = list.querySelector(`[data-film-id="${film.id}"] .card-btn-row`);
+    const card = list.querySelector(`[data-film-id="${film.id}"] .card-btn-row`);
     if (!card) return;
-    const filmData = toFilmData(film);
-    const btn      = createWatchlistBtn(filmData, 'text-xs px-3 py-1.5 rounded-full');
+    const btn = createWatchlistBtn(toFilmData(film), 'text-xs px-3 py-1.5 rounded-full');
     card.appendChild(btn);
   });
 }
@@ -195,17 +187,7 @@ function toggleSort() {
     `SORT BY IMDb ${sortDesc ? '↓' : '↑'} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
   currentTMDBPage = 1;
   currentPage     = 1;
-  if (!searchQuery) loadFilms();
-}
-
-function onSearch() {
-  clearTimeout(searchTimer);
-  searchQuery = document.getElementById('search-input').value;
-  searchTimer = setTimeout(() => {
-    currentTMDBPage = 1;
-    currentPage     = 1;
-    loadFilms();
-  }, 500);
+  loadFilms();
 }
 
 function onPerPageChange() {
@@ -214,18 +196,10 @@ function onPerPageChange() {
   renderFilms();
 }
 
-// ── Utils ─────────────────────────────────────────────────────────────────────
-function escHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 // ── Event listeners ───────────────────────────────────────────────────────────
 function initEventListeners() {
   document.getElementById('genre-btn').addEventListener('click', toggleGenre);
   document.getElementById('sort-btn').addEventListener('click', toggleSort);
-  document.getElementById('search-input').addEventListener('input', onSearch);
   document.getElementById('per-page').addEventListener('change', onPerPageChange);
 
   document.addEventListener('click', e => {
