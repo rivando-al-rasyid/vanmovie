@@ -59,8 +59,8 @@ function renderMyList() {
           </div>
           <div class="text-xs leading-relaxed">${escHtml(truncDesc)}</div>
           <div class="flex gap-2 mt-1">
-            <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
-            <button class="btn-remove text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer bg-transparent" style="border:1px solid var(--border-subtle);color:var(--text-muted)" onmouseover="this.style.borderColor='var(--error)';this.style.color='var(--error)'" onmouseout="this.style.borderColor='var(--border-subtle)';this.style.color='var(--text-muted)'" data-id="${film.id}">
+            <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-full no-underline">View Details</a>
+            <button class="btn-remove text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer bg-transparent" style="border:1px solid var(--border-subtle);color:var(--text-muted)" onmouseover="this.style.borderColor='var(--error)';this.style.color='var(--error)'" onmouseout="this.style.borderColor='var(--border-subtle)';this.style.color='var(--text-muted)'" data-id="${film.id}">
               Remove
             </button>
           </div>

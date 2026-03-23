@@ -98,7 +98,7 @@ function filmCardHTML(film) {
         </div>
         <div class="text-xs leading-relaxed">${escHtml(truncDesc)}</div>
         <div class="flex gap-2 mt-1 card-btn-row">
-          <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
+          <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-full no-underline">View Details</a>
         </div>
       </div>
     </div>
@@ -122,7 +122,7 @@ function renderFilms() {
     const card    = list.querySelector(`[data-film-id="${film.id}"] .card-btn-row`);
     if (!card) return;
     const filmData = toFilmData(film);
-    const btn      = createWatchlistBtn(filmData, 'text-xs px-3 py-1.5 rounded-lg');
+    const btn      = createWatchlistBtn(filmData, 'text-xs px-3 py-1.5 rounded-full');
     card.appendChild(btn);
   });
 }
