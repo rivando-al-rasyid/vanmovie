@@ -1,4 +1,5 @@
 import "../css/style.css";
+import { initNavAuth } from "./auth.js";
 import { fetchMovieDetail, imgUrl, toFilmData } from "./fetchData.js";
 import { bindMyListBtn } from "./addlist.js";
 
@@ -107,6 +108,8 @@ async function loadDetail(movieId) {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 const movieId = new URLSearchParams(location.search).get("id");
+
+initNavAuth();
 
 if (!movieId) {
   showError("Film tidak ditemukan.", "← Back", "films.html");

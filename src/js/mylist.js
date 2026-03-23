@@ -1,4 +1,5 @@
 import "../css/style.css";
+import { initNavAuth } from "./auth.js";
 import { imgUrl } from "./fetchData.js";
 import { getMyList, saveMyList } from "./addlist.js";
 
@@ -125,4 +126,5 @@ function renderMyList() {
   listEl.replaceChildren(...list.map(createFilmCard));
 }
 
+initNavAuth();
 renderMyList();

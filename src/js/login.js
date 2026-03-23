@@ -1,36 +1,12 @@
 import "../css/style.css";
+import { getSession, saveSession, initNavAuth } from "./auth.js";
 
-// ── Simulated user store (mirrors signup.js registeredEmails pattern) ─────────
+// ── Simulated user store ───────────────────────────────────────────────────────
 // In production, replace with a real auth API call.
 const REGISTERED_USERS = [
   { email: "test@example.com", password: "test123" },
   { email: "user@moviespace.com", password: "movie123" },
 ];
-
-const SESSION_KEY = "moviespace_session";
-
-// ── Session helpers ───────────────────────────────────────────────────────────
-function getSession() {
-  try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-  } catch {
-    return null;
-  }
-}
-
-function saveSession(user) {
-  localStorage.setItem(
-    SESSION_KEY,
-    JSON.stringify({
-      email: user.email,
-      loggedAt: Date.now(),
-    }),
-  );
-}
-
-function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-}
 
 // If already logged in, redirect to films page
 if (getSession()) {
@@ -166,14 +142,9 @@ function bindEnterKey() {
   });
 }
 
-// ── Logout utility (export for navbar or other pages) ────────────────────────
-export function logout() {
-  clearSession();
-  window.location.href = "login.html";
-}
-
 // ── Init ──────────────────────────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", () => {
+  initNavAuth(); // swap Login → avatar if already logged in
   document.querySelector(".btn-login")?.addEventListener("click", handleLogin);
   bindPasswordToggle();
   bindRememberMe();

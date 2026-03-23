@@ -1,4 +1,5 @@
 import "../css/style.css";
+import { initNavAuth } from "./auth.js";
 import {
   fetchMovies,
   fetchGenreList,
@@ -375,5 +376,6 @@ async function init() {
   }
 }
 
+initNavAuth();
 initEventListeners();
 init();
