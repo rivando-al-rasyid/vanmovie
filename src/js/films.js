@@ -11,6 +11,7 @@ import {
 function getMyList() {
   try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
 }
+
 function saveMyList(list) {
   localStorage.setItem('moviespace_mylist', JSON.stringify(list));
 }
@@ -33,7 +34,6 @@ let currentTMDBPage = 1;
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 async function loadFilms() {
-  showSkeleton();
   try {
     let data;
     if (searchQuery.trim()) {
@@ -91,7 +91,7 @@ function filmCardHTML(film) {
   const filmJSON   = JSON.stringify(toFilmData(film));
 
   const posterEl = poster
-    ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0" style="background-color:var(--bg-card)" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='var(--bg-card)';this.src=''">`
+    ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0" style="background-color:var(--bg-card)" src="${poster}" alt="${(film.title)}" loading="lazy" onerror="this.style.background='var(--bg-card)';this.src=''">`
     : `<div class="w-20 h-28 shrink-0 rounded-lg flex items-center justify-center text-xs text-center p-1" style="background-color:var(--bg-card);color:var(--text-faint)">No Poster</div>`;
 
   const watchlistStyle = inList
@@ -198,20 +198,6 @@ function renderPagination(totalResults) {
   }));
 }
 
-function showSkeleton() {
-  document.getElementById('film-list').innerHTML = Array(5).fill(`
-    <div class="flex gap-4 rounded-xl p-4" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)">
-      <div class="skeleton-line w-20 h-28 shrink-0 rounded-lg" style="margin-bottom:0"></div>
-      <div class="flex flex-col gap-2 flex-1 pt-1">
-        <div class="skeleton-line" style="width:55%;height:16px"></div>
-        <div class="skeleton-line" style="width:38%;height:11px"></div>
-        <div class="skeleton-line" style="width:20%;height:11px"></div>
-        <div class="skeleton-line" style="width:90%;height:11px"></div>
-        <div class="skeleton-line" style="width:75%;height:11px"></div>
-      </div>
-    </div>
-  `).join('');
-}
 
 // ── Controls ──────────────────────────────────────────────────────────────────
 function toggleGenre() {
