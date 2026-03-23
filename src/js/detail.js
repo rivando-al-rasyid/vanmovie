@@ -1,16 +1,6 @@
 import '../css/style.css';
 import { fetchMovieDetail, imgUrl, toFilmData } from './fetchData.js';
-
-// ── Watchlist helpers ─────────────────────────────────────────────────────────
-function getMyList() {
-  try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
-}
-function saveMyList(list) {
-  localStorage.setItem('moviespace_mylist', JSON.stringify(list));
-}
-function isInList(id) {
-  return getMyList().some(f => f.id === id);
-}
+import { bindMyListBtn } from './addlist.js';
 
 // ── Utilities ─────────────────────────────────────────────────────────────────
 function escHtml(str) {
@@ -23,35 +13,6 @@ function formatRuntime(min) {
   if (!min) return '';
   const h = Math.floor(min / 60), m = min % 60;
   return h ? `${h}h ${m}m` : `${m}m`;
-}
-
-// ── My List button ────────────────────────────────────────────────────────────
-function bindMyListBtn(filmData) {
-  const btn = document.getElementById('btn-mylist');
-
-  const update = () => {
-    if (isInList(filmData.id)) {
-      btn.textContent       = 'Remove from Watchlist';
-      btn.style.borderColor = 'var(--accent)';
-      btn.style.color       = 'var(--accent)';
-    } else {
-      btn.textContent       = 'Add to Watchlists';
-      btn.style.borderColor = '';
-      btn.style.color       = '';
-    }
-  };
-
-  btn.dataset.film = JSON.stringify(filmData);
-  update();
-
-  btn.addEventListener('click', () => {
-    const data = JSON.parse(btn.dataset.film);
-    const list = getMyList();
-    const idx  = list.findIndex(f => f.id === data.id);
-    if (idx === -1) { list.push(data); } else { list.splice(idx, 1); }
-    saveMyList(list);
-    update();
-  });
 }
 
 // ── Load & render ─────────────────────────────────────────────────────────────
@@ -99,7 +60,7 @@ async function loadDetail(movieId) {
     // TMDB link
     document.getElementById('btn-tmdb').href = `https://www.themoviedb.org/movie/${movieId}`;
 
-    // My List button — use toFilmData to get consistent shape
+    // My List button — uses addlist.js
     bindMyListBtn(toFilmData(detail));
 
   } catch (err) {

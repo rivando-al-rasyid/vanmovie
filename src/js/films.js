@@ -6,18 +6,7 @@ import {
   imgUrl,
   toFilmData,
 } from './fetchData.js';
-
-// ── Watchlist helpers ─────────────────────────────────────────────────────────
-function getMyList() {
-  try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
-}
-
-function saveMyList(list) {
-  localStorage.setItem('moviespace_mylist', JSON.stringify(list));
-}
-function isInList(id) {
-  return getMyList().some(f => f.id === id);
-}
+import { isInList, createWatchlistBtn } from './addlist.js';
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let allFilms        = [];
@@ -87,19 +76,13 @@ function filmCardHTML(film) {
   const filmGenres = (film.genre_ids || []).map(id => genres[id]).filter(Boolean);
   const desc       = film.overview || 'No description available.';
   const truncDesc  = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
-  const inList     = isInList(film.id);
-  const filmJSON   = JSON.stringify(toFilmData(film));
 
   const posterEl = poster
-    ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0" style="background-color:var(--bg-card)" src="${poster}" alt="${(film.title)}" loading="lazy" onerror="this.style.background='var(--bg-card)';this.src=''">`
+    ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0" style="background-color:var(--bg-card)" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='var(--bg-card)';this.src=''">`
     : `<div class="w-20 h-28 shrink-0 rounded-lg flex items-center justify-center text-xs text-center p-1" style="background-color:var(--bg-card);color:var(--text-faint)">No Poster</div>`;
 
-  const watchlistStyle = inList
-    ? `style="border-color:var(--accent);color:var(--accent)"`
-    : `style="border-color:var(--border-subtle);color:var(--text-muted)"`;
-
   return `
-    <div class="flex gap-4 rounded-xl p-4 transition-colors" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
+    <div class="flex gap-4 rounded-xl p-4 transition-colors" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)" data-film-id="${film.id}" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       ${posterEl}
       <div class="flex flex-col gap-1.5 min-w-0">
         <div class="text-sm font-semibold">
@@ -114,9 +97,8 @@ function filmCardHTML(film) {
           <span>(${(film.vote_count || 0).toLocaleString()} votes)</span>
         </div>
         <div class="text-xs leading-relaxed">${escHtml(truncDesc)}</div>
-        <div class="flex gap-2 mt-1">
+        <div class="flex gap-2 mt-1 card-btn-row">
           <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
-          <button class="btn-watchlist text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer bg-transparent" ${watchlistStyle} data-id="${film.id}" data-film='${escAttr(filmJSON)}'>${inList ? 'Remove from Watchlist' : 'Add to Watchlists'}</button>
         </div>
       </div>
     </div>
@@ -135,24 +117,13 @@ function renderFilms() {
   const pageFilms = filteredFilms.slice(start, start + perPage);
   list.innerHTML  = pageFilms.map(filmCardHTML).join('');
 
-  list.querySelectorAll('.btn-watchlist').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const filmData = JSON.parse(btn.dataset.film);
-      const saved    = getMyList();
-      const idx      = saved.findIndex(f => f.id === filmData.id);
-      if (idx === -1) {
-        saved.push(filmData);
-        btn.textContent = 'Remove from Watchlist';
-        btn.style.borderColor = 'var(--accent)';
-        btn.style.color       = 'var(--accent)';
-      } else {
-        saved.splice(idx, 1);
-        btn.textContent = 'Add to Watchlists';
-        btn.style.borderColor = 'var(--border-subtle)';
-        btn.style.color       = 'var(--text-muted)';
-      }
-      saveMyList(saved);
-    });
+  // Mount watchlist buttons via addlist.js createWatchlistBtn
+  pageFilms.forEach(film => {
+    const card    = list.querySelector(`[data-film-id="${film.id}"] .card-btn-row`);
+    if (!card) return;
+    const filmData = toFilmData(film);
+    const btn      = createWatchlistBtn(filmData, 'text-xs px-3 py-1.5 rounded-lg');
+    card.appendChild(btn);
   });
 }
 
@@ -197,7 +168,6 @@ function renderPagination(totalResults) {
     window.scrollTo(0, 0);
   }));
 }
-
 
 // ── Controls ──────────────────────────────────────────────────────────────────
 function toggleGenre() {
@@ -249,9 +219,6 @@ function escHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-function escAttr(str) {
-  return String(str).replace(/'/g, "\\'");
 }
 
 // ── Event listeners ───────────────────────────────────────────────────────────
