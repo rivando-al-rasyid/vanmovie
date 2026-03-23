@@ -1,6 +1,13 @@
 import '../css/style.css';
+import {
+  fetchMovies,
+  fetchGenreList,
+  searchMovies,
+  imgUrl,
+  toFilmData,
+} from './fetchData.js';
 
-// Watchlist helpers
+// ── Watchlist helpers ─────────────────────────────────────────────────────────
 function getMyList() {
   try { return JSON.parse(localStorage.getItem('moviespace_mylist') || '[]'); } catch { return []; }
 }
@@ -11,10 +18,7 @@ function isInList(id) {
   return getMyList().some(f => f.id === id);
 }
 
-const BASE_URL = import.meta.env.VITE_BASE_URL || 'https://api.themoviedb.org/3';
-const IMG_BASE = import.meta.env.VITE_IMG_BASE || 'https://image.tmdb.org/t/p/w500';
-const API_KEY  = import.meta.env.VITE_API_KEY  || '';
-
+// ── State ─────────────────────────────────────────────────────────────────────
 let allFilms        = [];
 let filteredFilms   = [];
 let genres          = {};
@@ -27,33 +31,19 @@ let searchTimer     = null;
 let totalTMDBPages  = 1;
 let currentTMDBPage = 1;
 
-async function tmdbFetch(path, params = {}) {
-  const url = new URL(BASE_URL + path);
-  url.searchParams.set('api_key', API_KEY);
-  url.searchParams.set('language', 'en-US');
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString());
-  return res.json();
-}
-
+// ── Data loading ──────────────────────────────────────────────────────────────
 async function loadFilms() {
   showSkeleton();
   try {
     let data;
     if (searchQuery.trim()) {
-      data = await tmdbFetch('/search/movie', { query: searchQuery, page: currentTMDBPage });
-    } else if (activeGenreId) {
-      data = await tmdbFetch('/discover/movie', {
-        with_genres: activeGenreId,
-        sort_by: sortDesc ? 'vote_average.desc' : 'vote_average.asc',
-        'vote_count.gte': 200,
-        page: currentTMDBPage,
-      });
+      data = await searchMovies(searchQuery, currentTMDBPage);
     } else {
-      data = await tmdbFetch('/discover/movie', {
-        sort_by: sortDesc ? 'vote_average.desc' : 'vote_average.asc',
-        'vote_count.gte': 500,
-        page: currentTMDBPage,
+      data = await fetchMovies({
+        page:     currentTMDBPage,
+        sortDesc,
+        genreId:  activeGenreId,
+        minVotes: 500,
       });
     }
 
@@ -65,10 +55,11 @@ async function loadFilms() {
     renderPagination(data.total_results || 0);
   } catch {
     document.getElementById('film-list').innerHTML =
-      `<div class="py-8 text-center" >Gagal memuat data. Coba refresh halaman.</div>`;
+      `<div class="py-8 text-center">Gagal memuat data. Coba refresh halaman.</div>`;
   }
 }
 
+// ── Genre menu ────────────────────────────────────────────────────────────────
 function buildGenreMenu(list) {
   const menu = document.getElementById('genre-menu');
   menu.innerHTML = `<div class="dropdown-item px-4 py-2 text-sm cursor-pointer" data-genre-id="0">All Genres</div>`;
@@ -88,16 +79,16 @@ function buildGenreMenu(list) {
   });
 }
 
-// ── Film card HTML ────────────────────────────────────────────────────────────
+// ── Film card ─────────────────────────────────────────────────────────────────
 function filmCardHTML(film) {
-  const poster    = film.poster_path ? IMG_BASE + film.poster_path : '';
-  const rating    = film.vote_average ? film.vote_average.toFixed(1) : 'N/A';
-  const year      = film.release_date ? film.release_date.split('-')[0] : '';
+  const poster     = imgUrl(film.poster_path) || '';
+  const rating     = film.vote_average ? film.vote_average.toFixed(1) : 'N/A';
+  const year       = film.release_date ? film.release_date.split('-')[0] : '';
   const filmGenres = (film.genre_ids || []).map(id => genres[id]).filter(Boolean);
-  const desc      = film.overview || 'No description available.';
-  const truncDesc = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
-  const inList    = isInList(film.id);
-  const filmJSON  = JSON.stringify({ id: film.id, title: film.title, poster_path: film.poster_path, vote_average: film.vote_average, vote_count: film.vote_count, release_date: film.release_date, genre_ids: film.genre_ids, overview: film.overview });
+  const desc       = film.overview || 'No description available.';
+  const truncDesc  = desc.length > 200 ? desc.slice(0, 200) + '...' : desc;
+  const inList     = isInList(film.id);
+  const filmJSON   = JSON.stringify(toFilmData(film));
 
   const posterEl = poster
     ? `<img class="w-20 h-28 object-cover rounded-lg shrink-0" style="background-color:var(--bg-card)" src="${poster}" alt="${escHtml(film.title)}" loading="lazy" onerror="this.style.background='var(--bg-card)';this.src=''">`
@@ -111,18 +102,18 @@ function filmCardHTML(film) {
     <div class="flex gap-4 rounded-xl p-4 transition-colors" style="background-color:var(--bg-card);border:1px solid var(--border-subtle)" onmouseover="this.style.borderColor='var(--border)'" onmouseout="this.style.borderColor='var(--border-subtle)'">
       ${posterEl}
       <div class="flex flex-col gap-1.5 min-w-0">
-        <div class="text-sm font-semibold" >
-          ${escHtml(film.title)} <span class="font-normal text-xs" >${year}</span>
+        <div class="text-sm font-semibold">
+          ${escHtml(film.title)} <span class="font-normal text-xs">${year}</span>
         </div>
         <div class="flex flex-wrap gap-1">
           ${filmGenres.map(g => `<span class="tag">${g}</span>`).join('')}
         </div>
         <div class="flex items-center gap-2 text-xs">
           <span class="tmdb-badge">IMDb</span>
-          <span class="font-semibold" >${rating} ★</span>
-          <span >(${(film.vote_count || 0).toLocaleString()} votes)</span>
+          <span class="font-semibold">${rating} ★</span>
+          <span>(${(film.vote_count || 0).toLocaleString()} votes)</span>
         </div>
-        <div class="text-xs leading-relaxed" >${escHtml(truncDesc)}</div>
+        <div class="text-xs leading-relaxed">${escHtml(truncDesc)}</div>
         <div class="flex gap-2 mt-1">
           <a href="detail.html?id=${film.id}" class="btn-primary text-xs px-3 py-1.5 rounded-lg no-underline">View Details</a>
           <button class="btn-watchlist text-xs px-3 py-1.5 rounded-lg transition-colors cursor-pointer bg-transparent" ${watchlistStyle} data-id="${film.id}" data-film='${escAttr(filmJSON)}'>${inList ? 'Remove from Watchlist' : 'Add to Watchlists'}</button>
@@ -135,15 +126,14 @@ function filmCardHTML(film) {
 function renderFilms() {
   const list = document.getElementById('film-list');
   if (!filteredFilms.length) {
-    list.innerHTML = `<div class="py-8 text-center" >Tidak ada film ditemukan.</div>`;
+    list.innerHTML = `<div class="py-8 text-center">Tidak ada film ditemukan.</div>`;
     document.getElementById('page-title').textContent = 'All Films (0)';
     return;
   }
 
   const start     = (currentPage - 1) * perPage;
   const pageFilms = filteredFilms.slice(start, start + perPage);
-
-  list.innerHTML = pageFilms.map(filmCardHTML).join('');
+  list.innerHTML  = pageFilms.map(filmCardHTML).join('');
 
   list.querySelectorAll('.btn-watchlist').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -195,18 +185,16 @@ function renderPagination(totalResults) {
     return btn;
   };
 
-  // Prev ‹
   btns.appendChild(makeArrow('&#8249;', isFirst, () => {
     if (currentPage > 1) { currentPage--; renderFilms(); renderPagination(totalResults); }
     else if (currentTMDBPage > 1) { currentTMDBPage--; currentPage = Math.ceil(20 / perPage); loadFilms(); }
-    scrollToTop();
+    window.scrollTo(0, 0);
   }));
 
-  // Next ›
   btns.appendChild(makeArrow('&#8250;', isLast, () => {
     if (currentPage < localPages) { currentPage++; renderFilms(); renderPagination(totalResults); }
     else if (currentTMDBPage < totalTMDBPages) { currentTMDBPage++; currentPage = 1; loadFilms(); }
-    scrollToTop();
+    window.scrollTo(0, 0);
   }));
 }
 
@@ -225,6 +213,7 @@ function showSkeleton() {
   `).join('');
 }
 
+// ── Controls ──────────────────────────────────────────────────────────────────
 function toggleGenre() {
   document.getElementById('genre-menu').classList.toggle('hidden');
   document.getElementById('genre-menu').classList.toggle('open');
@@ -241,7 +230,6 @@ function filterGenre(id, name) {
   const btn = document.getElementById('genre-btn');
   btn.innerHTML = `${name.toUpperCase()} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`;
   btn.classList.toggle('active-filter', id !== 0);
-
   loadFilms();
 }
 
@@ -270,22 +258,17 @@ function onPerPageChange() {
   renderFilms();
 }
 
+// ── Utils ─────────────────────────────────────────────────────────────────────
 function escHtml(str) {
   return String(str)
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
-
 function escAttr(str) {
   return String(str).replace(/'/g, "\\'");
 }
 
-function scrollToTop() {
-  window.scrollTo(0, 0);
-}
-
+// ── Event listeners ───────────────────────────────────────────────────────────
 function initEventListeners() {
   document.getElementById('genre-btn').addEventListener('click', toggleGenre);
   document.getElementById('sort-btn').addEventListener('click', toggleSort);
@@ -301,22 +284,19 @@ function initEventListeners() {
   });
 }
 
+// ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
-  if (!API_KEY) {
-    document.getElementById('film-list').innerHTML =
-      `<div class="py-8 text-center" >⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`;
-    return;
-  }
-
   try {
-    const genreRes = await tmdbFetch('/genre/movie/list');
-    genreRes.genres.forEach(g => (genres[g.id] = g.name));
-    buildGenreMenu(genreRes.genres);
+    const genreList = await fetchGenreList();
+    genreList.forEach(g => (genres[g.id] = g.name));
+    buildGenreMenu(genreList);
     document.getElementById('main-container').style.display = 'block';
     await loadFilms();
-  } catch {
+  } catch (err) {
     document.getElementById('film-list').innerHTML =
-      `<div class="py-8 text-center" >Gagal memuat data dari TMDB.</div>`;
+      err.message.includes('VITE_API_KEY')
+        ? `<div class="py-8 text-center">⚠️ API Key belum diset. Tambahkan VITE_API_KEY di file .env</div>`
+        : `<div class="py-8 text-center">Gagal memuat data dari TMDB.</div>`;
   }
 }
 
