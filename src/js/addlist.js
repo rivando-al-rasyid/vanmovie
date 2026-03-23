@@ -2,11 +2,15 @@
 // Provides getMyList, saveMyList, isInList, createWatchlistBtn, and bindMyListBtn.
 // Import and use these helpers everywhere instead of duplicating watchlist logic.
 
-const STORAGE_KEY = 'moviespace_mylist';
+const STORAGE_KEY = "moviespace_mylist";
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
 export function getMyList() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  } catch {
+    return [];
+  }
 }
 
 export function saveMyList(list) {
@@ -14,12 +18,12 @@ export function saveMyList(list) {
 }
 
 export function isInList(id) {
-  return getMyList().some(f => f.id === id);
+  return getMyList().some((f) => f.id === id);
 }
 
 export function toggleInList(filmData) {
   const list = getMyList();
-  const idx  = list.findIndex(f => f.id === filmData.id);
+  const idx = list.findIndex((f) => f.id === filmData.id);
   if (idx === -1) {
     list.push(filmData);
   } else {
@@ -31,15 +35,15 @@ export function toggleInList(filmData) {
 
 // ── Button state helpers ──────────────────────────────────────────────────────
 function setButtonAdded(btn) {
-  btn.textContent       = 'Remove from Watchlist';
-  btn.style.borderColor = 'var(--accent)';
-  btn.style.color       = 'var(--accent)';
+  btn.textContent = "Remove from Watchlist";
+  btn.style.borderColor = "var(--accent)";
+  btn.style.color = "var(--accent)";
 }
 
 function setButtonRemoved(btn) {
-  btn.textContent       = 'Add to Watchlist';
-  btn.style.borderColor = 'var(--border-subtle)';
-  btn.style.color       = 'var(--text-muted)';
+  btn.textContent = "Add to Watchlist";
+  btn.style.borderColor = "var(--border-subtle)";
+  btn.style.color = "var(--text-muted)";
 }
 
 // ── createWatchlistBtn ────────────────────────────────────────────────────────
@@ -50,17 +54,19 @@ function setButtonRemoved(btn) {
 //   const btn = createWatchlistBtn(filmData, 'text-xs px-3 py-1.5 rounded-lg');
 //   container.appendChild(btn);
 //
-export function createWatchlistBtn(filmData, extraClasses = '') {
-  const btn = document.createElement('button');
+export function createWatchlistBtn(filmData, extraClasses = "") {
+  const btn = document.createElement("button");
   btn.className = [
-    'btn-watchlist',
-    'transition-colors',
-    'cursor-pointer',
-    'bg-transparent',
+    "btn-watchlist",
+    "transition-colors",
+    "cursor-pointer",
+    "bg-transparent",
     extraClasses,
-  ].filter(Boolean).join(' ');
+  ]
+    .filter(Boolean)
+    .join(" ");
 
-  btn.style.border = '1px solid var(--border-subtle)';
+  btn.style.border = "1px solid var(--border-subtle)";
 
   // Set initial state
   if (isInList(filmData.id)) {
@@ -69,7 +75,7 @@ export function createWatchlistBtn(filmData, extraClasses = '') {
     setButtonRemoved(btn);
   }
 
-  btn.addEventListener('click', (e) => {
+  btn.addEventListener("click", (e) => {
     e.stopPropagation(); // prevent card click-through if card has its own handler
     const added = toggleInList(filmData);
     if (added) {
@@ -78,10 +84,12 @@ export function createWatchlistBtn(filmData, extraClasses = '') {
       setButtonRemoved(btn);
     }
     // Dispatch a custom event so other parts of the page can react if needed
-    btn.dispatchEvent(new CustomEvent('watchlist-change', {
-      bubbles: true,
-      detail: { filmData, added },
-    }));
+    btn.dispatchEvent(
+      new CustomEvent("watchlist-change", {
+        bubbles: true,
+        detail: { filmData, added },
+      }),
+    );
   });
 
   return btn;
@@ -95,7 +103,7 @@ export function createWatchlistBtn(filmData, extraClasses = '') {
 //   bindMyListBtn(toFilmData(detail));
 //
 export function bindMyListBtn(filmData) {
-  const btn = document.getElementById('btn-mylist');
+  const btn = document.getElementById("btn-mylist");
   if (!btn) return;
 
   const update = () => {
@@ -103,16 +111,16 @@ export function bindMyListBtn(filmData) {
       setButtonAdded(btn);
     } else {
       // detail page uses slightly different default text
-      btn.textContent       = 'Add to Watchlist';
-      btn.style.borderColor = '';
-      btn.style.color       = '';
+      btn.textContent = "Add to Watchlist";
+      btn.style.borderColor = "";
+      btn.style.color = "";
     }
   };
 
   btn.dataset.film = JSON.stringify(filmData);
   update();
 
-  btn.addEventListener('click', () => {
+  btn.addEventListener("click", () => {
     toggleInList(filmData);
     update();
   });

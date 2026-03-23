@@ -25,7 +25,6 @@ export default defineConfig([
       "html/indent": ["error", 4],
       "html/attrs-newline": "error",
       "html/no-extra-spacing-attrs": "error",
-      "html/use-baseline": "off",
     },
   },
 ]);

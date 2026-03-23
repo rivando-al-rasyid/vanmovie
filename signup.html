@@ -1,99 +1,115 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>MovieSpace — Sign Up</title>
-        <link rel="stylesheet" href="/src/css/style.css">
-        <link
-            rel="shortcut icon"
-            href="./src/asset/icon.ico"
-            type="image/x-icon"
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MovieSpace — Sign Up</title>
+    <link rel="stylesheet" href="/src/css/style.css" />
+    <link rel="shortcut icon" href="./src/asset/icon.ico" type="image/x-icon" />
+  </head>
+  <body class="min-h-screen">
+    <!-- Navbar -->
+    <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
+      <nav
+        class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between"
+      >
+        <a
+          href="index.html"
+          class="flex items-center gap-2 font-semibold no-underline"
         >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z"
+              fill="var(--accent)"
+            />
+          </svg>
+          <span>MovieSpace</span>
+        </a>
+        <ul class="flex items-center gap-4 list-none m-0 p-0">
+          <li>
+            <a href="films.html" class="nav-link text-sm no-underline"
+              >All Films</a
+            >
+          </li>
+          <li>
+            <a href="index.html" class="btn-nav text-sm no-underline">Login</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
 
-    </head>
-    <body class="min-h-screen">
-
-        <!-- Navbar -->
-        <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
-            <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-                <a href="index.html" class="flex items-center gap-2 font-semibold no-underline">
-                    <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z" fill="var(--accent)"/>
-                    </svg>
-                    <span>MovieSpace</span>
-                </a>
-                <ul class="flex items-center gap-4 list-none m-0 p-0">
-                    <li><a href="films.html" class="nav-link text-sm no-underline">All Films</a></li>
-                    <li><a href="index.html" class="btn-nav text-sm no-underline">Login</a></li>
-                </ul>
-            </nav>
+    <!-- Signup Page -->
+    <main class="min-h-screen flex items-center justify-center pt-14 px-4">
+      <article class="theme-card w-full max-w-sm p-8 shadow-xl">
+        <header class="flex items-center gap-2 justify-center mb-8">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z"
+              fill="var(--accent)"
+            />
+          </svg>
+          <h1 class="font-semibold text-lg m-0">MovieSpace</h1>
         </header>
+        <form id="signup-form" novalidate>
+          <div class="mb-4">
+            <label class="block text-xs mb-1.5 font-medium" for="email"
+              >Email</label
+            >
+            <input
+              id="email"
+              class="form-input"
+              type="email"
+              name="email"
+              autocomplete="email"
+              required
+            />
+            <p class="field-error hidden text-xs mt-1" id="email-error">
+              User already exists!
+            </p>
+          </div>
+          <div class="mb-4">
+            <label class="block text-xs mb-1.5 font-medium" for="password"
+              >Password</label
+            >
+            <input
+              id="password"
+              class="form-input"
+              type="password"
+              name="password"
+              autocomplete="new-password"
+              required
+            />
+            <p class="field-error hidden text-xs mt-1" id="password-error">
+              Password must be at least 6 characters.
+            </p>
+          </div>
+          <div class="mb-6">
+            <label class="block text-xs mb-1.5 font-medium" for="confirm"
+              >Confirm Password</label
+            >
+            <input
+              id="confirm"
+              class="form-input"
+              type="password"
+              name="confirm"
+              autocomplete="new-password"
+              required
+            />
+            <p class="field-error hidden text-xs mt-1" id="confirm-error">
+              Passwords do not match!
+            </p>
+          </div>
+          <button class="btn-primary w-full py-2.5 text-sm" type="submit">
+            Sign Up
+          </button>
+        </form>
+        <p class="text-center text-xs mt-5">
+          Already have an account?
+          <a href="index.html" class="no-underline">Login Here</a>
+        </p>
+      </article>
+    </main>
 
-        <!-- Signup Page -->
-        <main class="min-h-screen flex items-center justify-center pt-14 px-4">
-            <article class="theme-card w-full max-w-sm p-8 shadow-xl">
-                <header class="flex items-center gap-2 justify-center mb-8">
-                    <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                    >
-                        <path d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z" fill="var(--accent)"/>
-                    </svg>
-                    <h1 class="font-semibold text-lg m-0">MovieSpace</h1>
-                </header>
-                <form id="signup-form" novalidate>
-                    <div class="mb-4">
-                        <label class="block text-xs mb-1.5 font-medium" for="email">Email</label>
-                        <input
-                            id="email"
-                            class="form-input"
-                            type="email"
-                            name="email"
-                            autocomplete="email"
-                            required
-                        >
-                        <p class="field-error hidden text-xs mt-1" id="email-error">User already exists!</p>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-xs mb-1.5 font-medium" for="password">Password</label>
-                        <input
-                            id="password"
-                            class="form-input"
-                            type="password"
-                            name="password"
-                            autocomplete="new-password"
-                            required
-                        >
-                        <p class="field-error hidden text-xs mt-1" id="password-error">Password must be at least 6 characters.</p>
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-xs mb-1.5 font-medium" for="confirm">Confirm Password</label>
-                        <input
-                            id="confirm"
-                            class="form-input"
-                            type="password"
-                            name="confirm"
-                            autocomplete="new-password"
-                            required
-                        >
-                        <p class="field-error hidden text-xs mt-1" id="confirm-error">Passwords do not match!</p>
-                    </div>
-                    <button class="btn-primary w-full py-2.5 text-sm" type="submit">Sign Up</button>
-                </form>
-                <p class="text-center text-xs mt-5">
-                    Already have an account? <a href="index.html" class="no-underline">Login Here</a>
-                </p>
-            </article>
-        </main>
-
-        <script type="module" src="./src/js/signup.js"></script>
-    </body>
+    <script type="module" src="./src/js/signup.js"></script>
+  </body>
 </html>
