@@ -18,12 +18,12 @@ export function saveMyList(list) {
 }
 
 export function isInList(id) {
-  return getMyList().some((f) => f.id === id);
+  return getMyList().some((myfilm) => myfilm.id === id);
 }
 
 export function toggleInList(filmData) {
   const list = getMyList();
-  const idx = list.findIndex((f) => f.id === filmData.id);
+  const idx = list.findIndex((myfilm) => myfilm.id === filmData.id);
   if (idx === -1) {
     list.push(filmData);
   } else {
