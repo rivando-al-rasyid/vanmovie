@@ -1,10 +1,11 @@
-// ── addlist.js — Reusable Watchlist Button Module ────────────────────────────
-// Provides getMyList, saveMyList, isInList, createWatchlistBtn, and bindMyListBtn.
-// Import and use these helpers everywhere instead of duplicating watchlist logic.
+// ── addlist.js — Watchlist helpers ──────────────────────────────────────────
+// Provides getMyList, saveMyList, isInList, createWatchlistBtn, bindMyListBtn.
+// Import these helpers everywhere instead of duplicating watchlist logic.
 
 const STORAGE_KEY = "moviespace_mylist";
 
 // ── Storage helpers ───────────────────────────────────────────────────────────
+
 export function getMyList() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -18,102 +19,84 @@ export function saveMyList(list) {
 }
 
 export function isInList(id) {
-  return getMyList().some((myfilm) => myfilm.id === id);
+  return getMyList().some((film) => film.id === id);
 }
 
 export function toggleInList(filmData) {
   const list = getMyList();
-  const idx = list.findIndex((myfilm) => myfilm.id === filmData.id);
+  const idx  = list.findIndex((film) => film.id === filmData.id);
+
   if (idx === -1) {
-    list.push(filmData);
+    list.push(filmData);   // add
   } else {
-    list.splice(idx, 1);
+    list.splice(idx, 1);   // remove
   }
+
   saveMyList(list);
-  return idx === -1; // true = was added, false = was removed
+  return idx === -1; // true = added, false = removed
 }
 
 // ── Button state helpers ──────────────────────────────────────────────────────
-function setButtonAdded(btn) {
-  btn.textContent = "Remove from Watchlist";
+
+function setAdded(btn) {
+  btn.textContent       = "Remove from Watchlist";
   btn.style.borderColor = "var(--accent)";
-  btn.style.color = "var(--accent)";
+  btn.style.color       = "var(--accent)";
 }
 
-function setButtonRemoved(btn) {
-  btn.textContent = "Add to Watchlist";
+function setRemoved(btn) {
+  btn.textContent       = "Add to Watchlist";
   btn.style.borderColor = "var(--border-subtle)";
-  btn.style.color = "var(--text-muted)";
+  btn.style.color       = "var(--text-muted)";
 }
 
 // ── createWatchlistBtn ────────────────────────────────────────────────────────
-// Creates and returns a fully wired <button> element for any film card.
+// Creates and returns a fully wired <button> for any film card.
 //
 // Usage:
-//   import { createWatchlistBtn } from './addlist.js';
-//   const btn = createWatchlistBtn(filmData, 'text-xs px-3 py-1.5 rounded-lg');
+//   const btn = createWatchlistBtn(filmData, "text-xs px-3 py-1.5 rounded-full");
 //   container.appendChild(btn);
-//
+
 export function createWatchlistBtn(filmData, extraClasses = "") {
   const btn = document.createElement("button");
-  btn.className = [
-    "btn-watchlist",
-    "transition-colors",
-    "cursor-pointer",
-    "bg-transparent",
-    extraClasses,
-  ]
+  btn.className = ["btn-watchlist", "transition-colors", "cursor-pointer", "bg-transparent", extraClasses]
     .filter(Boolean)
     .join(" ");
-
   btn.style.border = "1px solid var(--border-subtle)";
 
-  // Set initial state
-  if (isInList(filmData.id)) {
-    setButtonAdded(btn);
-  } else {
-    setButtonRemoved(btn);
-  }
+  isInList(filmData.id) ? setAdded(btn) : setRemoved(btn);
 
   btn.addEventListener("click", (e) => {
-    e.stopPropagation(); // prevent card click-through if card has its own handler
+    e.stopPropagation(); // prevent event bubbling through card
     const added = toggleInList(filmData);
-    if (added) {
-      setButtonAdded(btn);
-    } else {
-      setButtonRemoved(btn);
-    }
-    // Dispatch a custom event so other parts of the page can react if needed
-    btn.dispatchEvent(
-      new CustomEvent("watchlist-change", {
-        bubbles: true,
-        detail: { filmData, added },
-      }),
-    );
+    added ? setAdded(btn) : setRemoved(btn);
+
+    btn.dispatchEvent(new CustomEvent("watchlist-change", {
+      bubbles: true,
+      detail: { filmData, added },
+    }));
   });
 
   return btn;
 }
 
 // ── bindMyListBtn ─────────────────────────────────────────────────────────────
-// Wires up an existing <button id="btn-mylist"> element (used on detail.html).
+// Wires up the existing <button id="btn-mylist"> on detail.html.
 //
 // Usage:
-//   import { bindMyListBtn } from './addlist.js';
 //   bindMyListBtn(toFilmData(detail));
-//
+
 export function bindMyListBtn(filmData) {
   const btn = document.getElementById("btn-mylist");
   if (!btn) return;
 
   const update = () => {
     if (isInList(filmData.id)) {
-      setButtonAdded(btn);
+      setAdded(btn);
     } else {
-      // detail page uses slightly different default text
-      btn.textContent = "Add to Watchlist";
+      btn.textContent       = "Add to Watchlist";
       btn.style.borderColor = "";
-      btn.style.color = "";
+      btn.style.color       = "";
     }
   };
 

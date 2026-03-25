@@ -1,11 +1,12 @@
-// ── auth.js — shared session & navbar auth UI ────────────────────────────────
-// Import this module on every page that has a navbar.
-// It reads the session from localStorage and swaps the Login button with a
+// ── auth.js — Session management & navbar auth UI ───────────────────────────
+// Import on every page that has a navbar.
+// Reads the session from localStorage and swaps the Login button with a
 // user-initial avatar + dropdown when the user is logged in.
 
 const SESSION_KEY = "moviespace_session";
 
 // ── Session helpers ───────────────────────────────────────────────────────────
+
 export function getSession() {
   try {
     return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
@@ -30,25 +31,35 @@ export function logout() {
   window.location.href = "index.html";
 }
 
-// ── Derive initials from email ────────────────────────────────────────────────
+// ── Initials helper ───────────────────────────────────────────────────────────
+// "john.doe@..." → "JD"  |  "alice@..." → "AL"
+
 function getInitials(email = "") {
-  // "john.doe@..." → "JD"  |  "alice@..." → "AL"
   const local = email.split("@")[0] || "";
   const parts = local.split(/[.\-_]+/).filter(Boolean);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return local.slice(0, 2).toUpperCase();
 }
 
+// ── Close all open dropdowns ──────────────────────────────────────────────────
 
-// ── Build the avatar + dropdown HTML element ──────────────────────────────────
+function closeAllDropdowns() {
+  document.querySelectorAll(".avatar-dropdown.open").forEach((dropdown) => {
+    dropdown.classList.remove("open");
+    dropdown.previousElementSibling?.setAttribute("aria-expanded", "false");
+  });
+}
+
+// ── Build avatar + dropdown element ──────────────────────────────────────────
+
 function buildAvatar(session) {
   const initials = getInitials(session.email);
 
+  // Wrapper
   const wrapper = document.createElement("div");
   wrapper.className = "avatar-wrapper";
 
+  // Avatar button
   const btn = document.createElement("button");
   btn.className = "avatar-btn";
   btn.setAttribute("aria-haspopup", "true");
@@ -56,6 +67,7 @@ function buildAvatar(session) {
   btn.setAttribute("aria-label", "User menu");
   btn.textContent = initials;
 
+  // Dropdown
   const dropdown = document.createElement("div");
   dropdown.className = "avatar-dropdown";
   dropdown.innerHTML = `
@@ -80,7 +92,7 @@ function buildAvatar(session) {
   wrapper.appendChild(btn);
   wrapper.appendChild(dropdown);
 
-  // Toggle dropdown
+  // Toggle dropdown on button click
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
     const isOpen = dropdown.classList.contains("open");
@@ -91,39 +103,26 @@ function buildAvatar(session) {
     }
   });
 
-  // Logout
-  dropdown.querySelector("#auth-logout-btn").addEventListener("click", () => {
-    logout();
-  });
+  // Logout button
+  dropdown.querySelector("#auth-logout-btn").addEventListener("click", logout);
 
-  // Close on outside click
+  // Close dropdown when clicking outside
   document.addEventListener("click", closeAllDropdowns);
 
   return wrapper;
 }
 
-function closeAllDropdowns() {
-  document.querySelectorAll(".avatar-dropdown.open").forEach((d) => {
-    d.classList.remove("open");
-    d.previousElementSibling?.setAttribute("aria-expanded", "false");
-  });
-}
+// ── initNavAuth ───────────────────────────────────────────────────────────────
+// Call on every page. If the user is logged in, replaces the Login button
+// with the avatar widget. Also applies the user icon to the logo.
 
-// ── Main: replace Login button with avatar if logged in ───────────────────────
 export function initNavAuth() {
-  userIcon();
   const session = getSession();
 
-  // Find all <a> elements that link to index.html with text "Login"
   document.querySelectorAll("a.btn-nav").forEach((link) => {
     const href = link.getAttribute("href") || "";
-    if (href.includes("index.html") || href === "index.html") {
-      if (session) {
-        // Replace Login button with avatar
-        const avatar = buildAvatar(session);
-        link.replaceWith(avatar);
-      }
-      // If not logged in, leave the Login button as-is
+    if (href.includes("index.html") && session) {
+      link.replaceWith(buildAvatar(session));
     }
   });
 }

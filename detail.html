@@ -4,98 +4,73 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MovieSpace — Film Detail</title>
-    <link rel="stylesheet" href="/src/css/style.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./src/css/style.css" />
+    <link rel="shortcut icon" href="./src/asset/icon.ico" type="image/x-icon" />
   </head>
   <body class="min-h-screen">
+
     <!-- Navbar -->
     <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
-      <nav
-        class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between"
-      >
-        <a
-          href="index.html"
-          class="flex items-center gap-2 font-semibold no-underline"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M12 4C13.3132 4 14.6136 4.25866 15.8268 4.7612C17.0401 5.26375 18.1425 6.0003 19.0711 6.9289C19.9997 7.8575 20.7362 8.9599 21.2388 10.1732C21.7413 11.3864 22 12.6868 22 14C22 16.6522 20.9464 19.1957 19.0711 21.0711C17.1957 22.9464 14.6522 24 12 24C10.6868 24 9.38642 23.7413 8.17317 23.2388C6.95991 22.7362 5.85752 21.9997 4.92893 21.0711C3.05357 19.1957 2 16.6522 2 14C2 11.3478 3.05357 8.8043 4.92893 6.9289C6.8043 5.05357 9.34784 4 12 4ZM12 6C11.337 6 10.7011 6.2634 10.2322 6.7322C9.76339 7.2011 9.5 7.837 9.5 8.5C9.5 9.163 9.76339 9.7989 10.2322 10.2678C10.7011 10.7366 11.337 11 12 11C12.663 11 13.2989 10.7366 13.7678 10.2678C14.2366 9.7989 14.5 9.163 14.5 8.5C14.5 7.837 14.2366 7.2011 13.7678 6.7322C13.2989 6.2634 12.663 6 12 6ZM4.4 11.53C4.19 12.16 4.248 12.845 4.548 13.436C4.848 14.027 5.37 14.474 6 14.68C7.32 15.1 8.73 14.39 9.15 13.07C9.355 12.44 9.302 11.755 9.002 11.164C8.702 10.573 8.18 10.126 7.55 9.92C6.24 9.5 4.82 10.21 4.4 11.53ZM19.61 11.5C19.18 10.21 17.77 9.5 16.46 9.92C16.146 10.02 15.856 10.18 15.605 10.393C15.354 10.606 15.148 10.866 14.998 11.159C14.848 11.452 14.758 11.772 14.733 12.1C14.707 12.428 14.747 12.758 14.85 13.07C15.056 13.7 15.503 14.222 16.094 14.522C16.685 14.822 17.37 14.875 18 14.67C19.31 14.25 20.03 12.83 19.61 11.5ZM7.31 20.46C8.42 21.28 10 21.03 10.8 19.91C11.61 18.79 11.36 17.23 10.24 16.42C9.704 16.032 9.035 15.872 8.382 15.975C7.728 16.078 7.141 16.436 6.75 16.97C5.94 18.09 6.19 19.65 7.31 20.46ZM16.7 20.46C17.82 19.65 18.07 18.09 17.26 16.97C17.068 16.704 16.825 16.478 16.545 16.306C16.265 16.134 15.954 16.019 15.63 15.968C15.305 15.917 14.974 15.931 14.655 16.008C14.335 16.086 14.035 16.226 13.77 16.42C13.504 16.612 13.278 16.855 13.106 17.135C12.934 17.414 12.818 17.725 12.766 18.049C12.714 18.373 12.727 18.704 12.803 19.024C12.879 19.343 13.017 19.644 13.21 19.91C14 21.03 15.59 21.27 16.7 20.46ZM12 12.5C11.6022 12.5 11.2206 12.658 10.9393 12.9393C10.658 13.2206 10.5 13.6022 10.5 14C10.5 14.3978 10.658 14.7794 10.9393 15.0607C11.2206 15.342 11.6022 15.5 12 15.5C12.3978 15.5 12.7794 15.342 13.0607 15.0607C13.342 14.7794 13.5 14.3978 13.5 14C13.5 13.6022 13.342 13.2206 13.0607 12.9393C12.7794 12.658 12.3978 12.5 12 12.5Z"
-              fill="var(--accent)"
-            />
-          </svg>
+      <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+        <a href="index.html" class="flex items-center gap-2 font-semibold no-underline">
+          <img src="./src/asset/icon.svg" alt="Icon">
           <span>MovieSpace</span>
         </a>
         <ul class="flex items-center gap-4 list-none m-0 p-0">
-          <li>
-            <a href="films.html" class="nav-link text-sm no-underline"
-              >All Films</a
-            >
-          </li>
-          <li>
-            <a href="mylist.html" class="nav-link text-sm no-underline"
-              >My Watchlists</a
-            >
-          </li>
-          <li>
-            <a href="index.html" class="btn-nav text-sm no-underline">Login</a>
-          </li>
+          <li><a href="films.html"  class="nav-link text-sm no-underline">All Films</a></li>
+          <li><a href="mylist.html" class="nav-link text-sm no-underline">My Watchlists</a></li>
+          <li><a href="index.html"  class="btn-nav text-sm no-underline">Login</a></li>
         </ul>
       </nav>
     </header>
 
-    <!-- Detail Content -->
+    <!-- Detail content -->
     <main class="max-w-6xl mx-auto px-6 pt-20 pb-16" id="detail-container">
+
       <!-- Breadcrumb -->
       <div class="flex items-center gap-2 text-sm mb-6">
-        <a href="films.html" class="no-underline transition-colors"
-          >All Films</a
-        >
+        <a href="films.html" class="no-underline transition-colors">All Films</a>
         <span>/</span>
         <span id="breadcrumb-title" class="truncate max-w-xs"></span>
       </div>
 
-      <!-- Skeleton -->
+      <!-- Skeleton (shown while loading) -->
       <div id="skeleton-detail">
         <div class="w-full rounded-2xl overflow-hidden">
-          <div class="skeleton-line w-full rounded-2xl"></div>
+          <div class="skeleton-line w-full rounded-2xl" style="height:12rem"></div>
         </div>
         <div class="flex flex-col gap-3 mt-5">
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
+          <div class="skeleton-line" style="height:1.5rem;width:60%"></div>
+          <div class="skeleton-line" style="height:1rem;width:40%"></div>
+          <div class="skeleton-line" style="height:1rem;width:80%"></div>
+          <div class="skeleton-line" style="height:1rem;width:70%"></div>
         </div>
       </div>
 
-      <!-- Film Detail (hidden until loaded) -->
+      <!-- Film detail (hidden until loaded) -->
       <div id="film-detail" class="hidden">
         <div class="flex flex-col md:flex-row gap-8 mt-4">
+
           <!-- Poster -->
           <div class="shrink-0">
             <img
               id="detail-poster"
               class="w-44 h-64 md:w-52 md:h-76 object-cover rounded-xl shadow-2xl"
-              src=""
-              alt=""
-              loading="lazy"
+              src="" alt="" loading="lazy"
             />
           </div>
 
           <!-- Info -->
           <div class="flex flex-col gap-3">
-            <h1
-              id="detail-title"
-              class="text-2xl md:text-3xl font-bold m-0"
-            ></h1>
+            <h1 id="detail-title" class="text-2xl md:text-3xl font-bold m-0"></h1>
 
             <div class="flex flex-wrap items-center gap-2 text-sm">
               <span id="detail-year"></span>
               <span>·</span>
               <span id="detail-runtime"></span>
               <span>·</span>
-              <span
-                id="detail-language"
-                class="text-xs px-2 py-0.5 rounded uppercase"
-              ></span>
+              <span id="detail-language" class="text-xs px-2 py-0.5 rounded uppercase"></span>
             </div>
 
             <!-- Genres -->
@@ -117,7 +92,7 @@
             <!-- Overview -->
             <p id="detail-overview" class="text-sm leading-relaxed m-0"></p>
 
-            <!-- Action Buttons -->
+            <!-- Action buttons -->
             <div class="flex flex-wrap gap-3 mt-2">
               <a
                 id="btn-tmdb"
@@ -125,15 +100,8 @@
                 target="_blank"
                 class="btn-primary inline-flex items-center gap-2 text-sm px-4 py-2 rounded-lg no-underline"
               >
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M10 6v2H5v11h11v-5h2v6a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1h6zm11-3v8l-3.528-3.535L9.828 15l-1.414-1.414 7.64-7.644L12 2h9z"
-                  />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 6v2H5v11h11v-5h2v6a1 1 0 01-1 1H4a1 1 0 01-1-1V7a1 1 0 011-1h6zm11-3v8l-3.528-3.535L9.828 15l-1.414-1.414 7.64-7.644L12 2h9z"/>
                 </svg>
                 View on TMDB
               </a>
@@ -148,12 +116,10 @@
         </div>
       </div>
 
-      <!-- Error State -->
+      <!-- Error state -->
       <div id="detail-error" class="hidden py-16 text-center">
         <p class="text-lg mb-2">Film tidak ditemukan</p>
-        <a href="films.html" class="text-sm no-underline"
-          >← Back to All Films</a
-        >
+        <a href="films.html" class="text-sm no-underline">← Back to All Films</a>
       </div>
     </main>
 
