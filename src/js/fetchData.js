@@ -66,3 +66,12 @@ export function toFilmData(movie) {
     overview: movie.overview ?? "",
   };
 }
+<<<<<<< HEAD
+=======
+
+export function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+>>>>>>> parent of 9423db2 (refactor : change code from html inject to dom)

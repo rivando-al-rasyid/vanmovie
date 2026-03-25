@@ -100,6 +100,7 @@
         </div>
       </section>
 
+<<<<<<< HEAD
       <!-- Film List -->
       <section>
         <ol class="flex flex-col gap-4 list-none m-0 p-0" id="film-list"></ol>
@@ -124,6 +125,31 @@
         <div class="flex items-center gap-3" id="page-btns"></div>
       </nav>
     </main>
+=======
+            <!-- Filter & Search Bar -->
+            <section>
+                <div class="flex flex-wrap items-center gap-3 mb-6">
+
+                    <!-- Genre Filter -->
+                    <div class="relative">
+                        <button class="filter-btn flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold transition-colors cursor-pointer" id="genre-btn">
+                            GENRE
+                            <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                            >
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </button>
+                        <ul class="dropdown-menu hidden absolute top-full left-0 mt-1 min-w-40 rounded-full shadow-xl z-20 py-1 max-h-60 overflow-y-auto list-none m-0 p-0" id="genre-menu">
+                            <li class="dropdown-item px-4 py-2 text-sm cursor-pointer" data-genre-id="0">All Genres</li>
+                        </ul>
+                    </div>
+>>>>>>> parent of 9423db2 (refactor : change code from html inject to dom)
 
     <script type="module" src="./src/js/films.js"></script>
   </body>
