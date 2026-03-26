@@ -1,128 +1,193 @@
-// ── auth.js — Session management & navbar auth UI ───────────────────────────
-// Import on every page that has a navbar.
-// Reads the session from localStorage and swaps the Login button with a
-// user-initial avatar + dropdown when the user is logged in.
+// ── auth.js — Optimized Session & Auth Logic ────────────────────────────────
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CONFIG & CONSTANTS
+// ══════════════════════════════════════════════════════════════════════════════
 
 const SESSION_KEY = "moviespace_session";
+const REMEMBER_KEY = "moviespace_remember_email";
 
-// ── Session helpers ───────────────────────────────────────────────────────────
+// Mock Data (Replace with API calls in production)
+const REGISTERED_USERS = [
+  { email: "test@example.com",    password: "test123"  },
+  { email: "user@moviespace.com", password: "movie123" },
+];
 
-export function getSession() {
-  try {
-    return JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
-  } catch {
-    return null;
+// ══════════════════════════════════════════════════════════════════════════════
+// CORE UTILITIES
+// ══════════════════════════════════════════════════════════════════════════════
+
+const AuthUtils = {
+  isValidEmail: (email) => /\S+@\S+\.\S+/.test(email),
+
+  getInitials: (email = "") => {
+    const local = email.split("@")[0] || "";
+    const parts = local.split(/[.\-_]+/).filter(Boolean);
+    return parts.length >= 2
+      ? (parts[0][0] + parts[1][0]).toUpperCase()
+      : local.slice(0, 2).toUpperCase();
+  },
+
+  toggleError: (id, message = "", isVisible = false) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = message;
+    isVisible ? el.classList.remove("hidden") : el.classList.add("hidden");
   }
-}
+};
 
-export function saveSession(user) {
-  localStorage.setItem(
-    SESSION_KEY,
-    JSON.stringify({ email: user.email, loggedAt: Date.now() }),
-  );
-}
+export const Session = {
+  get: () => {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
+    catch { return null; }
+  },
+  save: (user) => localStorage.setItem(SESSION_KEY, JSON.stringify({ email: user.email, loggedAt: Date.now() })),
+  clear: () => {
+    localStorage.removeItem(SESSION_KEY);
+    window.location.href = "index.html";
+  }
+};
 
-export function clearSession() {
-  localStorage.removeItem(SESSION_KEY);
-}
-
-export function logout() {
-  clearSession();
-  window.location.href = "index.html";
-}
-
-// ── Initials helper ───────────────────────────────────────────────────────────
-// "john.doe@..." → "JD"  |  "alice@..." → "AL"
-
-function getInitials(email = "") {
-  const local = email.split("@")[0] || "";
-  const parts = local.split(/[.\-_]+/).filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return local.slice(0, 2).toUpperCase();
-}
-
-// ── Close all open dropdowns ──────────────────────────────────────────────────
-
-function closeAllDropdowns() {
-  document.querySelectorAll(".avatar-dropdown.open").forEach((dropdown) => {
-    dropdown.classList.remove("open");
-    dropdown.previousElementSibling?.setAttribute("aria-expanded", "false");
-  });
-}
-
-// ── Build avatar + dropdown element ──────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// NAVBAR AUTH UI
+// ══════════════════════════════════════════════════════════════════════════════
 
 function buildAvatar(session) {
-  const initials = getInitials(session.email);
-
-  // Wrapper
+  const initials = AuthUtils.getInitials(session.email);
   const wrapper = document.createElement("div");
-  wrapper.className = "avatar-wrapper";
+  wrapper.className = "avatar-wrapper relative ml-4";
 
-  // Avatar button
-  const btn = document.createElement("button");
-  btn.className = "avatar-btn";
-  btn.setAttribute("aria-haspopup", "true");
-  btn.setAttribute("aria-expanded", "false");
-  btn.setAttribute("aria-label", "User menu");
-  btn.textContent = initials;
-
-  // Dropdown
-  const dropdown = document.createElement("div");
-  dropdown.className = "avatar-dropdown";
-  dropdown.innerHTML = `
-    <div class="avatar-dropdown-header">
-      <div class="avatar-dropdown-label">${initials}</div>
-      <div class="avatar-dropdown-email">${session.email}</div>
-    </div>
-    <a href="mylist.html" class="avatar-dropdown-item">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2v16z"/>
-      </svg>
-      My Watchlists
-    </a>
-    <button class="avatar-dropdown-item danger" id="auth-logout-btn">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
-      </svg>
-      Sign Out
+  wrapper.innerHTML = `
+    <button class="avatar-btn w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm" aria-haspopup="true" aria-expanded="false">
+      ${initials}
     </button>
+    <div class="avatar-dropdown hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
+      <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-500 truncate">${session.email}</div>
+      <a href="mylist.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Watchlists</a>
+      <button id="logout-btn" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Sign Out</button>
+    </div>
   `;
 
-  wrapper.appendChild(btn);
-  wrapper.appendChild(dropdown);
+  const btn = wrapper.querySelector(".avatar-btn");
+  const dropdown = wrapper.querySelector(".avatar-dropdown");
 
-  // Toggle dropdown on button click
-  btn.addEventListener("click", (e) => {
+  btn.onclick = (e) => {
     e.stopPropagation();
-    const isOpen = dropdown.classList.contains("open");
-    closeAllDropdowns();
-    if (!isOpen) {
-      dropdown.classList.add("open");
-      btn.setAttribute("aria-expanded", "true");
-    }
-  });
+    const isOpen = !dropdown.classList.contains("hidden");
+    document.querySelectorAll(".avatar-dropdown").forEach(d => d.classList.add("hidden")); // Close others
+    if (isOpen) dropdown.classList.add("hidden");
+    else dropdown.classList.remove("hidden");
+  };
 
-  // Logout button
-  dropdown.querySelector("#auth-logout-btn").addEventListener("click", logout);
-
-  // Close dropdown when clicking outside
-  document.addEventListener("click", closeAllDropdowns);
-
+  wrapper.querySelector("#logout-btn").onclick = Session.clear;
   return wrapper;
 }
 
-// ── initNavAuth ───────────────────────────────────────────────────────────────
-// Call on every page. If the user is logged in, replaces the Login button
-// with the avatar widget. Also applies the user icon to the logo.
-
 export function initNavAuth() {
-  const session = getSession();
+  const session = Session.get();
+  if (!session) return;
 
-  document.querySelectorAll("a.btn-nav").forEach((link) => {
-    const href = link.getAttribute("href") || "";
-    if (href.includes("index.html") && session) {
-      link.replaceWith(buildAvatar(session));
+  // Find the login button in the nav and replace it
+  const loginBtn = document.querySelector(".btn-nav");
+  if (loginBtn) loginBtn.replaceWith(buildAvatar(session));
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// LOGIN PAGE LOGIC
+// ══════════════════════════════════════════════════════════════════════════════
+
+function initLoginPage() {
+  if (Session.get()) return window.location.href = "films.html";
+
+  const emailInp = document.getElementById("login-email");
+  const passInp  = document.getElementById("login-password");
+  const loginBtn = document.querySelector(".btn-login");
+  const rememberChk = document.getElementById("remember-me");
+
+  // Load remembered email
+  const savedEmail = localStorage.getItem(REMEMBER_KEY);
+  if (savedEmail && emailInp) {
+    emailInp.value = savedEmail;
+    if (rememberChk) rememberChk.checked = true;
+  }
+
+  const handleLogin = async () => {
+    // Reset state
+    ["login-email-error", "login-password-error", "login-general-error"].forEach(id => AuthUtils.toggleError(id));
+
+    const email = emailInp.value.trim().toLowerCase();
+    const password = passInp.value;
+
+    if (!AuthUtils.isValidEmail(email)) return AuthUtils.toggleError("login-email-error", "Enter a valid email", true);
+    if (!password) return AuthUtils.toggleError("login-password-error", "Password is required", true);
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing in...";
+
+    await new Promise(r => setTimeout(r, 600)); // Simulating network lag
+
+    const user = REGISTERED_USERS.find(u => u.email === email && u.password === password);
+
+    if (user) {
+      if (rememberChk?.checked) localStorage.setItem(REMEMBER_KEY, email);
+      else localStorage.removeItem(REMEMBER_KEY);
+
+      Session.save(user);
+      loginBtn.textContent = "Success! Redirecting...";
+      setTimeout(() => window.location.href = "films.html", 500);
+    } else {
+      AuthUtils.toggleError("login-general-error", "Invalid credentials. Try test@example.com / test123", true);
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign In";
     }
+  };
+
+  loginBtn?.addEventListener("click", handleLogin);
+
+  // Toggle Password Visiblity
+  document.getElementById("toggle-password")?.addEventListener("click", function() {
+    const isText = passInp.type === "text";
+    passInp.type = isText ? "password" : "text";
+    this.textContent = isText ? "👁" : "🙈";
   });
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SIGNUP PAGE LOGIC
+// ══════════════════════════════════════════════════════════════════════════════
+
+function initSignupPage() {
+  const form = document.getElementById("signup-form");
+
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    ["email-error", "password-error", "confirm-error"].forEach(id => AuthUtils.toggleError(id));
+
+    const email = document.getElementById("email").value.trim();
+    const pass = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm").value;
+
+    if (!AuthUtils.isValidEmail(email)) return AuthUtils.toggleError("email-error", "Valid email required", true);
+    if (pass.length < 6) return AuthUtils.toggleError("password-error", "Min 6 characters required", true);
+    if (pass !== confirm) return AuthUtils.toggleError("confirm-error", "Passwords do not match", true);
+
+    alert("Registration successful! (Demo only)");
+    window.location.href = "index.html";
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INITIALIZATION
+// ══════════════════════════════════════════════════════════════════════════════
+
+document.addEventListener("DOMContentLoaded", () => {
+  initNavAuth();
+
+  if (document.getElementById("login-form")) initLoginPage();
+  else if (document.getElementById("signup-form")) initSignupPage();
+
+  // Global click handler to close dropdowns
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".avatar-dropdown").forEach(d => d.classList.add("hidden"));
+  });
+});

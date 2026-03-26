@@ -6,7 +6,7 @@ import { initNavAuth } from "./auth.js";
 import { fetchMovies, fetchMovieDetail, fetchGenreList, imgUrl, toFilmData } from "./fetchData.js";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// WATCHLIST HELPERS  (inlined from addlist.js)
+// WATCHLIST HELPERS
 // ══════════════════════════════════════════════════════════════════════════════
 
 const STORAGE_KEY = "moviespace_mylist";
@@ -56,11 +56,6 @@ function setRemoved(btn) {
 }
 
 // ── createWatchlistBtn ────────────────────────────────────────────────────────
-// Creates and returns a fully wired <button> for any film card.
-//
-// Usage:
-//   const btn = createWatchlistBtn(filmData, "text-xs px-3 py-1.5 rounded-full");
-//   container.appendChild(btn);
 
 export function createWatchlistBtn(filmData, extraClasses = "") {
   const btn = document.createElement("button");
@@ -72,7 +67,7 @@ export function createWatchlistBtn(filmData, extraClasses = "") {
   isInList(filmData.id) ? setAdded(btn) : setRemoved(btn);
 
   btn.addEventListener("click", (e) => {
-    e.stopPropagation(); // prevent event bubbling through card
+    e.stopPropagation();
     const added = toggleInList(filmData);
     added ? setAdded(btn) : setRemoved(btn);
 
@@ -86,10 +81,6 @@ export function createWatchlistBtn(filmData, extraClasses = "") {
 }
 
 // ── myListBtn ─────────────────────────────────────────────────────────────────
-// Wires up the existing <button id="btn-mylist"> on detail.html.
-//
-// Usage:
-//   myListBtn(toFilmData(detail));
 
 export function myListBtn(filmData) {
   const btn = document.getElementById("btn-mylist");
@@ -124,19 +115,19 @@ if (document.getElementById("film-list")) {
 
 async function initFilmsPage() {
 
-  // ── State ───────────────────────────────────────────────────────────────────
+  // ── State ─────────────────────────────────────────────────────────────────────
 
-  let allFilms         = [];
-  let genres           = {};        // { id: name }
-  let activeGenreId    = 0;
-  let sortDesc         = true;
-  let currentPage      = 1;
-  let perPage          = 10;
-  let totalTMDBPages   = 1;
-  let currentTMDBPage  = 1;
-  let totalResults     = 0;
+  let allFilms        = [];
+  let genres          = {};
+  let activeGenreId   = 0;
+  let sortDesc        = true;
+  let currentPage     = 1;
+  const perPage       = 10;
+  let totalTMDBPages  = 1;
+  let currentTMDBPage = 1;
+  let totalResults    = 0;
 
-  // ── DOM refs ─────────────────────────────────────────────────────────────────
+  // ── DOM refs ──────────────────────────────────────────────────────────────────
 
   const filmList  = document.getElementById("film-list");
   const pageTitle = document.getElementById("page-title");
@@ -146,7 +137,7 @@ async function initFilmsPage() {
   const genreBtn  = document.getElementById("genre-btn");
   const sortBtn   = document.getElementById("sort-btn");
 
-  // ── Film card builder ────────────────────────────────────────────────────────
+  // ── Film card builder ─────────────────────────────────────────────────────────
 
   function createFilmCard(film) {
     const poster     = imgUrl(film.poster_path);
@@ -244,10 +235,12 @@ async function initFilmsPage() {
 
   function renderFilms() {
     if (!allFilms.length) {
-      const msg = document.createElement("p");
-      msg.className   = "py-8 text-center";
-      msg.textContent = "Tidak ada film ditemukan.";
-      filmList.replaceChildren(msg);
+      filmList.replaceChildren(
+        Object.assign(document.createElement("p"), {
+          className:   "py-8 text-center",
+          textContent: "Tidak ada film ditemukan.",
+        })
+      );
       pageTitle.textContent = "All Films (0)";
       return;
     }
@@ -331,10 +324,12 @@ async function initFilmsPage() {
       renderFilms();
       renderPagination();
     } catch {
-      const msg = document.createElement("p");
-      msg.className   = "py-8 text-center";
-      msg.textContent = "Gagal memuat data. Coba refresh halaman.";
-      filmList.replaceChildren(msg);
+      filmList.replaceChildren(
+        Object.assign(document.createElement("p"), {
+          className:   "py-8 text-center",
+          textContent: "Gagal memuat data. Coba refresh halaman.",
+        })
+      );
     }
   }
 
@@ -348,9 +343,9 @@ async function initFilmsPage() {
 
     const items = [allItem, ...list.map((g) => {
       const li = document.createElement("li");
-      li.className        = "dropdown-item px-4 py-2 text-sm cursor-pointer";
-      li.textContent      = g.name;
-      li.dataset.genreId  = g.id;
+      li.className       = "dropdown-item px-4 py-2 text-sm cursor-pointer";
+      li.textContent     = g.name;
+      li.dataset.genreId = g.id;
       return li;
     })];
 
@@ -392,18 +387,10 @@ async function initFilmsPage() {
     loadFilms();
   }
 
-  function onPerPageChange() {
-    perPage     = parseInt(document.getElementById("per-page").value, 10);
-    currentPage = 1;
-    renderFilms();
-    renderPagination();
-  }
-
   // ── Event listeners ───────────────────────────────────────────────────────────
 
   genreBtn.addEventListener("click", toggleGenreMenu);
   sortBtn.addEventListener("click", toggleSort);
-  document.getElementById("per-page").addEventListener("change", onPerPageChange);
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest("#genre-btn") && !e.target.closest("#genre-menu")) {
@@ -420,12 +407,14 @@ async function initFilmsPage() {
     buildGenreMenu(genreList);
     await loadFilms();
   } catch (err) {
-    const msg = document.createElement("p");
-    msg.className   = "py-8 text-center";
-    msg.textContent = err.message.includes("API_KEY")
-      ? "⚠️ API Key belum diset. Edit CONFIG di fetchData.js"
-      : "Gagal memuat data dari TMDB.";
-    filmList.replaceChildren(msg);
+    filmList.replaceChildren(
+      Object.assign(document.createElement("p"), {
+        className:   "py-8 text-center",
+        textContent: err.message.includes("API_KEY")
+          ? "⚠️ API Key belum diset. Edit CONFIG di fetchData.js"
+          : "Gagal memuat data dari TMDB.",
+      })
+    );
   }
 }
 
@@ -437,7 +426,6 @@ function initDetailPage() {
 
   // ── DOM refs ──────────────────────────────────────────────────────────────────
 
-  const skeletonEl   = document.getElementById("skeleton-detail");
   const detailEl     = document.getElementById("film-detail");
   const breadcrumb   = document.getElementById("breadcrumb-title");
   const titleEl      = document.getElementById("detail-title");
@@ -462,10 +450,13 @@ function initDetailPage() {
   }
 
   function showError(message) {
-    const p = document.createElement("p");
-    p.className   = "py-8 text-center";
-    p.textContent = message;
-    skeletonEl.replaceChildren(p);
+    detailEl.replaceChildren(
+      Object.assign(document.createElement("p"), {
+        className:   "py-8 text-center",
+        textContent: message,
+      })
+    );
+    detailEl.classList.remove("hidden");
   }
 
   // ── Load & render ─────────────────────────────────────────────────────────────
@@ -474,7 +465,6 @@ function initDetailPage() {
     try {
       const detail = await fetchMovieDetail(movieId);
 
-      skeletonEl.classList.add("hidden");
       detailEl.classList.remove("hidden");
 
       document.title         = `MovieSpace — ${detail.title}`;
@@ -505,12 +495,12 @@ function initDetailPage() {
       popularityEl.textContent = detail.popularity  ? `Popularity: ${detail.popularity.toFixed(0)}`    : "";
 
       // Genre tags
-      const tags = (detail.genres || []).map((g) => {
-        const span       = document.createElement("span");
-        span.className   = "tag";
-        span.textContent = g.name;
-        return span;
-      });
+      const tags = (detail.genres || []).map((g) =>
+        Object.assign(document.createElement("span"), {
+          className:   "tag",
+          textContent: g.name,
+        })
+      );
       genresEl.replaceChildren(...tags);
 
       // TMDB link
@@ -534,10 +524,7 @@ function initDetailPage() {
   const movieId = new URLSearchParams(location.search).get("id");
 
   if (!movieId) {
-    skeletonEl?.replaceChildren(Object.assign(document.createElement("p"), {
-      className:   "py-8 text-center",
-      textContent: "Film tidak ditemukan.",
-    }));
+    showError("Film tidak ditemukan.");
   } else {
     loadDetail(movieId);
   }
