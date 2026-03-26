@@ -1,7 +1,6 @@
 // ── mylist.js — My Watchlists page ──────────────────────────────────────────
-import { initNavAuth } from "./auth.js";
 import { imgUrl } from "./fetchData.js";
-import { getMyList, saveMyList } from "./addlist.js";
+import { getMyList, saveMyList } from "./movies.js";
 
 // ── Film card builder ─────────────────────────────────────────────────────────
 
@@ -122,5 +121,4 @@ function renderMyList() {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
-initNavAuth();
 renderMyList();

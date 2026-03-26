@@ -4,9 +4,10 @@
 
 const createHeader = () => {
   const currentPath = window.location.pathname;
-  const isIndex = currentPath.endsWith('index.html') || currentPath === '/';
-  const isFilms = currentPath.endsWith('films.html');
+  const isIndex  = currentPath.endsWith('index.html')  || currentPath === '/';
+  const isFilms  = currentPath.endsWith('films.html');
   const isMyList = currentPath.endsWith('mylist.html');
+  const isDetail = currentPath.endsWith('detail.html');
   const isSignUp = currentPath.endsWith('signup.html');
 
   const headerHTML = `
@@ -18,7 +19,7 @@ const createHeader = () => {
         </a>
         <ul class="flex items-center gap-4 list-none m-0 p-0">
           <li>
-            <a href="films.html" class="nav-link text-sm no-underline ${isFilms ? 'active' : ''}">
+            <a href="films.html" class="nav-link text-sm no-underline ${isFilms || isDetail ? 'active' : ''}">
               All Films
             </a>
           </li>
@@ -38,7 +39,14 @@ const createHeader = () => {
   `;
 
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
+
+  // Dispatch event so auth.js knows the header is ready
+  document.dispatchEvent(new CustomEvent('headerReady'));
 };
 
-// Initialize header when DOM is loaded
-document.addEventListener('DOMContentLoaded', createHeader);
+// Safe init: works whether script loads before or after DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', createHeader);
+} else {
+  createHeader();
+}

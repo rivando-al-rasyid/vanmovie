@@ -7,22 +7,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="./src/css/style.css" />
     <link rel="shortcut icon" href="./src/asset/icon.ico" type="image/x-icon" />
+    <script src="./src/js/header.js" defer></script>
+    <script type="module" src="./src/js/auth.js"></script>
   </head>
   <body class="min-h-screen">
-
-    <!-- Navbar -->
-    <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
-      <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <a href="index.html" class="flex items-center gap-2 font-semibold no-underline">
-          <img src="./src/asset/icon.svg" alt="Icon">
-          <span>MovieSpace</span>
-        </a>
-        <ul class="flex items-center gap-4 list-none m-0 p-0">
-          <li><a href="films.html" class="nav-link text-sm no-underline">All Films</a></li>
-          <li><a href="index.html" class="btn-nav text-sm no-underline">Login</a></li>
-        </ul>
-      </nav>
-    </header>
 
     <!-- Signup form -->
     <main class="min-h-screen flex items-center justify-center pt-14 px-4">
@@ -57,6 +45,5 @@
       </article>
     </main>
 
-    <script type="module" src="./src/js/auth.js"></script>
   </body>
 </html>

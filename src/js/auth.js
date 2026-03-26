@@ -73,10 +73,10 @@ function buildAvatar(session) {
 
   btn.onclick = (e) => {
     e.stopPropagation();
-    const isOpen = !dropdown.classList.contains("hidden");
-    document.querySelectorAll(".avatar-dropdown").forEach(d => d.classList.add("hidden")); // Close others
-    if (isOpen) dropdown.classList.add("hidden");
-    else dropdown.classList.remove("hidden");
+    const isOpen = dropdown.classList.contains("open");
+    document.querySelectorAll(".avatar-dropdown").forEach(d => d.classList.remove("open"));
+    if (!isOpen) dropdown.classList.add("open");
+    btn.setAttribute("aria-expanded", String(!isOpen));
   };
 
   wrapper.querySelector("#logout-btn").onclick = Session.clear;
@@ -87,7 +87,7 @@ export function initNavAuth() {
   const session = Session.get();
   if (!session) return;
 
-  // Find the login button in the nav and replace it
+  // Replace the Login button with the avatar
   const loginBtn = document.querySelector(".btn-nav");
   if (loginBtn) loginBtn.replaceWith(buildAvatar(session));
 }
@@ -97,11 +97,11 @@ export function initNavAuth() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function initLoginPage() {
-  if (Session.get()) return window.location.href = "films.html";
+  if (Session.get()) return (window.location.href = "films.html");
 
-  const emailInp = document.getElementById("login-email");
-  const passInp  = document.getElementById("login-password");
-  const loginBtn = document.querySelector(".btn-login");
+  const emailInp  = document.getElementById("login-email");
+  const passInp   = document.getElementById("login-password");
+  const loginBtn  = document.querySelector(".btn-login");
   const rememberChk = document.getElementById("remember-me");
 
   // Load remembered email
@@ -112,19 +112,23 @@ function initLoginPage() {
   }
 
   const handleLogin = async () => {
-    // Reset state
-    ["login-email-error", "login-password-error", "login-general-error"].forEach(id => AuthUtils.toggleError(id));
+    // Reset errors
+    ["login-email-error", "login-password-error", "login-general-error"].forEach(id =>
+      AuthUtils.toggleError(id)
+    );
 
-    const email = emailInp.value.trim().toLowerCase();
+    const email    = emailInp.value.trim().toLowerCase();
     const password = passInp.value;
 
-    if (!AuthUtils.isValidEmail(email)) return AuthUtils.toggleError("login-email-error", "Enter a valid email", true);
-    if (!password) return AuthUtils.toggleError("login-password-error", "Password is required", true);
+    if (!AuthUtils.isValidEmail(email))
+      return AuthUtils.toggleError("login-email-error", "Enter a valid email", true);
+    if (!password)
+      return AuthUtils.toggleError("login-password-error", "Password is required", true);
 
     loginBtn.disabled = true;
     loginBtn.textContent = "Signing in...";
 
-    await new Promise(r => setTimeout(r, 600)); // Simulating network lag
+    await new Promise(r => setTimeout(r, 600)); // Simulated network delay
 
     const user = REGISTERED_USERS.find(u => u.email === email && u.password === password);
 
@@ -134,9 +138,13 @@ function initLoginPage() {
 
       Session.save(user);
       loginBtn.textContent = "Success! Redirecting...";
-      setTimeout(() => window.location.href = "films.html", 500);
+      setTimeout(() => (window.location.href = "films.html"), 500);
     } else {
-      AuthUtils.toggleError("login-general-error", "Invalid credentials. Try test@example.com / test123", true);
+      AuthUtils.toggleError(
+        "login-general-error",
+        "Invalid credentials. Try test@example.com / test123",
+        true
+      );
       loginBtn.disabled = false;
       loginBtn.textContent = "Sign In";
     }
@@ -144,8 +152,13 @@ function initLoginPage() {
 
   loginBtn?.addEventListener("click", handleLogin);
 
-  // Toggle Password Visiblity
-  document.getElementById("toggle-password")?.addEventListener("click", function() {
+  // Allow Enter key to submit
+  [emailInp, passInp].forEach(inp =>
+    inp?.addEventListener("keydown", e => e.key === "Enter" && handleLogin())
+  );
+
+  // Toggle password visibility
+  document.getElementById("toggle-password")?.addEventListener("click", function () {
     const isText = passInp.type === "text";
     passInp.type = isText ? "password" : "text";
     this.textContent = isText ? "👁" : "🙈";
@@ -161,15 +174,20 @@ function initSignupPage() {
 
   form?.addEventListener("submit", (e) => {
     e.preventDefault();
-    ["email-error", "password-error", "confirm-error"].forEach(id => AuthUtils.toggleError(id));
+    ["email-error", "password-error", "confirm-error"].forEach(id =>
+      AuthUtils.toggleError(id)
+    );
 
-    const email = document.getElementById("email").value.trim();
-    const pass = document.getElementById("password").value;
+    const email   = document.getElementById("email").value.trim();
+    const pass    = document.getElementById("password").value;
     const confirm = document.getElementById("confirm").value;
 
-    if (!AuthUtils.isValidEmail(email)) return AuthUtils.toggleError("email-error", "Valid email required", true);
-    if (pass.length < 6) return AuthUtils.toggleError("password-error", "Min 6 characters required", true);
-    if (pass !== confirm) return AuthUtils.toggleError("confirm-error", "Passwords do not match", true);
+    if (!AuthUtils.isValidEmail(email))
+      return AuthUtils.toggleError("email-error", "Valid email required", true);
+    if (pass.length < 6)
+      return AuthUtils.toggleError("password-error", "Min 6 characters required", true);
+    if (pass !== confirm)
+      return AuthUtils.toggleError("confirm-error", "Passwords do not match", true);
 
     alert("Registration successful! (Demo only)");
     window.location.href = "index.html";
@@ -177,17 +195,26 @@ function initSignupPage() {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// INITIALIZATION
+// INITIALIZATION — wait for header to be injected before replacing Login btn
 // ══════════════════════════════════════════════════════════════════════════════
 
-document.addEventListener("DOMContentLoaded", () => {
+function onReady() {
   initNavAuth();
 
   if (document.getElementById("login-form")) initLoginPage();
   else if (document.getElementById("signup-form")) initSignupPage();
 
-  // Global click handler to close dropdowns
+  // Global click: close dropdowns when clicking outside
   document.addEventListener("click", () => {
-    document.querySelectorAll(".avatar-dropdown").forEach(d => d.classList.add("hidden"));
+    document.querySelectorAll(".avatar-dropdown").forEach(d => d.classList.remove("open"));
   });
+}
+
+// header.js fires 'headerReady' after injecting the navbar.
+// If header.js isn't loaded (e.g. pages with inline navbars), fall back to DOMContentLoaded.
+document.addEventListener("headerReady", onReady, { once: true });
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Only run if headerReady never fired (no header.js on this page)
+  if (!document.querySelector(".navbar")) onReady();
 });

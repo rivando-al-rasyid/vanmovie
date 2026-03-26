@@ -2,7 +2,6 @@
 // Single entry-point for both films.html and detail.html.
 // Auto-detects the current page and runs the appropriate logic.
 
-import { initNavAuth } from "./auth.js";
 import { fetchMovies, fetchMovieDetail, fetchGenreList, imgUrl, toFilmData } from "./fetchData.js";
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -101,7 +100,6 @@ export function myListBtn(filmData) {
 // INIT
 // ══════════════════════════════════════════════════════════════════════════════
 
-initNavAuth();
 
 if (document.getElementById("film-list")) {
   initFilmsPage();
