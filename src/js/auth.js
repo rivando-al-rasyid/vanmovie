@@ -156,13 +156,6 @@ function initLoginPage() {
   [emailInp, passInp].forEach(inp =>
     inp?.addEventListener("keydown", e => e.key === "Enter" && handleLogin())
   );
-
-  // Toggle password visibility
-  document.getElementById("toggle-password")?.addEventListener("click", function () {
-    const isText = passInp.type === "text";
-    passInp.type = isText ? "password" : "text";
-    this.textContent = isText ? "👁" : "🙈";
-  });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
