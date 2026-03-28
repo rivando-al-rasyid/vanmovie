@@ -10,32 +10,32 @@ import { fetchMovies, fetchMovieDetail, fetchGenreList, imgUrl, toFilmData } fro
 
 const STORAGE_KEY = "moviespace_mylist";
 
-export function getMyList() {
+export const getMyList = () => {
   try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
   catch { return []; }
-}
+};
 
-export function saveMyList(list) {
+export const saveMyList = (list) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-}
+};
 
-export const isInList  = (id)       => getMyList().some((f) => f.id === id);
-export const removeFromList = (id)  => saveMyList(getMyList().filter((f) => f.id !== id));
+export const isInList       = (id) => getMyList().some((f) => f.id === id);
+export const removeFromList = (id) => saveMyList(getMyList().filter((f) => f.id !== id));
 
-export function toggleInList(filmData) {
+export const toggleInList = (filmData) => {
   const list = getMyList();
   const idx  = list.findIndex((f) => f.id === filmData.id);
   idx === -1 ? list.push(filmData) : list.splice(idx, 1);
   saveMyList(list);
   return idx === -1; // true = added
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SHARED CARD PRIMITIVES  (DRY — used by film-list card AND mylist card)
 // ══════════════════════════════════════════════════════════════════════════════
 
 /** Build the poster <img> or a "No Poster" placeholder */
-function buildPoster(film) {
+const buildPoster = (film) => {
   const poster = imgUrl(film.poster_path);
   if (poster) {
     const img     = document.createElement("img");
@@ -52,10 +52,10 @@ function buildPoster(film) {
   ph.style.cssText = "background-color:var(--bg-card);color:var(--text-faint)";
   ph.textContent   = "No Poster";
   return ph;
-}
+};
 
 /** Build the title row: "Title <year>" */
-function buildTitleRow(film) {
+const buildTitleRow = (film) => {
   const year = film.release_date ? film.release_date.split("-")[0] : "";
   const div  = document.createElement("div");
   div.className = "text-sm font-semibold";
@@ -65,10 +65,10 @@ function buildTitleRow(film) {
   yr.textContent = year;
   div.appendChild(yr);
   return div;
-}
+};
 
 /** Build the IMDb rating row */
-function buildRatingRow(film) {
+const buildRatingRow = (film) => {
   const rating = film.vote_average ? film.vote_average.toFixed(1) : "N/A";
   const row    = document.createElement("div");
   row.className = "flex items-center gap-2 text-xs";
@@ -78,42 +78,42 @@ function buildRatingRow(film) {
     <span>(${(film.vote_count || 0).toLocaleString()} votes)</span>
   `;
   return row;
-}
+};
 
 /** Build the overview <p> (truncated to 200 chars) */
-function buildOverview(film) {
+const buildOverview = (film) => {
   const desc = film.overview || "No description available.";
   const p    = document.createElement("p");
   p.className   = "text-xs leading-relaxed m-0";
   p.textContent = desc.length > 200 ? desc.slice(0, 200) + "…" : desc;
   return p;
-}
+};
 
 /** Build a styled <li> card shell with hover effect */
-function buildCardShell(extraClass = "") {
+const buildCardShell = (extraClass = "") => {
   const li = document.createElement("li");
   li.className  = `flex gap-4 rounded-xl p-4 transition-colors ${extraClass}`.trim();
   li.style.cssText = "background-color:var(--bg-card);border:1px solid var(--border-subtle)";
   li.addEventListener("mouseover", () => (li.style.borderColor = "var(--border)"));
   li.addEventListener("mouseout",  () => (li.style.borderColor = "var(--border-subtle)"));
   return li;
-}
+};
 
 // ── Watchlist button helpers ──────────────────────────────────────────────────
 
-function setAdded(btn) {
+const setAdded = (btn) => {
   btn.textContent       = "Remove from Watchlist";
   btn.style.borderColor = "var(--accent)";
   btn.style.color       = "var(--accent)";
-}
+};
 
-function setRemoved(btn) {
+const setRemoved = (btn) => {
   btn.textContent       = "Add to Watchlist";
   btn.style.borderColor = "var(--border-subtle)";
   btn.style.color       = "var(--text-muted)";
-}
+};
 
-export function createWatchlistBtn(filmData, extraClasses = "") {
+export const createWatchlistBtn = (filmData, extraClasses = "") => {
   const btn = document.createElement("button");
   btn.className = ["btn-watchlist", "transition-colors", "cursor-pointer", "bg-transparent", extraClasses]
     .filter(Boolean).join(" ");
@@ -131,31 +131,23 @@ export function createWatchlistBtn(filmData, extraClasses = "") {
     }));
   });
   return btn;
-}
+};
 
 /** Wire up the #btn-mylist button on the detail page */
-export function myListBtn(filmData) {
-  const btn = document.getElementById("btn-mylist");
+export const myListBtn = (filmData) => {
+  const btn = document.querySelector("#btn-mylist");
   if (!btn) return;
   const update = () => (isInList(filmData.id) ? setAdded(btn) : setRemoved(btn));
   btn.dataset.film = JSON.stringify(filmData);
   update();
   btn.addEventListener("click", () => { toggleInList(filmData); update(); });
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-// INIT — auto-detect current page
-// ══════════════════════════════════════════════════════════════════════════════
-
-if      (document.getElementById("film-list"))   initFilmsPage();
-else if (document.getElementById("film-detail"))  initDetailPage();
-else if (document.getElementById("mylist-films")) initMyListPage();
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // FILMS PAGE
 // ══════════════════════════════════════════════════════════════════════════════
 
-async function initFilmsPage() {
+const initFilmsPage = async () => {
   let allFilms        = [];
   let genres          = {};
   let activeGenreId   = 0;
@@ -166,17 +158,17 @@ async function initFilmsPage() {
   let totalResults    = 0;
   const perPage       = 10;
 
-  const filmList  = document.getElementById("film-list");
-  const pageTitle = document.getElementById("page-title");
-  const paginInfo = document.getElementById("pagination-info");
-  const pageBtns  = document.getElementById("page-btns");
-  const genreMenu = document.getElementById("genre-menu");
-  const genreBtn  = document.getElementById("genre-btn");
-  const sortBtn   = document.getElementById("sort-btn");
+  const filmList  = document.querySelector("#film-list");
+  const pageTitle = document.querySelector("#page-title");
+  const paginInfo = document.querySelector("#pagination-info");
+  const pageBtns  = document.querySelector("#page-btns");
+  const genreMenu = document.querySelector("#genre-menu");
+  const genreBtn  = document.querySelector("#genre-btn");
+  const sortBtn   = document.querySelector("#sort-btn");
 
   // ── Film card (films.html) ──────────────────────────────────────────────────
 
-  function createFilmCard(film) {
+  const createFilmCard = (film) => {
     const filmGenres = (film.genre_ids || []).map((id) => genres[id]).filter(Boolean);
     const li         = buildCardShell();
     li.dataset.filmId = film.id;
@@ -206,11 +198,11 @@ async function initFilmsPage() {
 
     li.append(buildPoster(film), info);
     return li;
-  }
+  };
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
-  function renderFilms() {
+  const renderFilms = () => {
     if (!allFilms.length) {
       filmList.replaceChildren(
         Object.assign(document.createElement("p"), {
@@ -223,9 +215,9 @@ async function initFilmsPage() {
     }
     const start = (currentPage - 1) * perPage;
     filmList.replaceChildren(...allFilms.slice(start, start + perPage).map(createFilmCard));
-  }
+  };
 
-  function renderPagination() {
+  const renderPagination = () => {
     const localPages  = Math.ceil(allFilms.length / perPage);
     const grandTotal  = Math.min(totalResults, 5000);
     pageTitle.textContent = `All Films (${grandTotal.toLocaleString()}+)`;
@@ -260,11 +252,11 @@ async function initFilmsPage() {
         window.scrollTo(0, 0);
       })
     );
-  }
+  };
 
   // ── Data loading ────────────────────────────────────────────────────────────
 
-  async function loadFilms() {
+  const loadFilms = async () => {
     try {
       const data     = await fetchMovies({ page: currentTMDBPage, sortDesc, genreId: activeGenreId, minVotes: 500 });
       totalTMDBPages = Math.min(data.total_pages || 1, 250);
@@ -280,11 +272,11 @@ async function initFilmsPage() {
         })
       );
     }
-  }
+  };
 
   // ── Genre menu ──────────────────────────────────────────────────────────────
 
-  function buildGenreMenu(list) {
+  const buildGenreMenu = (list) => {
     const items = [{ id: 0, name: "All Genres" }, ...list].map((g) => {
       const li = document.createElement("li");
       li.className       = "dropdown-item px-4 py-2 text-sm cursor-pointer";
@@ -297,15 +289,15 @@ async function initFilmsPage() {
       const item = e.target.closest(".dropdown-item");
       if (item) filterByGenre(Number(item.dataset.genreId), item.textContent.trim());
     });
-  }
+  };
 
-  function filterByGenre(id, name) {
+  const filterByGenre = (id, name) => {
     activeGenreId = id; currentTMDBPage = 1; currentPage = 1;
     genreMenu.classList.add("hidden"); genreMenu.classList.remove("open");
     genreBtn.innerHTML = `${name.toUpperCase()} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`;
     genreBtn.classList.toggle("active-filter", id !== 0);
     loadFilms();
-  }
+  };
 
   // ── Controls ────────────────────────────────────────────────────────────────
 
@@ -344,26 +336,26 @@ async function initFilmsPage() {
       })
     );
   }
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // DETAIL PAGE
 // ══════════════════════════════════════════════════════════════════════════════
 
-function initDetailPage() {
-  const detailEl     = document.getElementById("film-detail");
-  const breadcrumb   = document.getElementById("breadcrumb-title");
-  const titleEl      = document.getElementById("detail-title");
-  const yearEl       = document.getElementById("detail-year");
-  const runtimeEl    = document.getElementById("detail-runtime");
-  const languageEl   = document.getElementById("detail-language");
-  const taglineEl    = document.getElementById("detail-tagline");
-  const overviewEl   = document.getElementById("detail-overview");
-  const ratingEl     = document.getElementById("detail-rating");
-  const votesEl      = document.getElementById("detail-votes");
-  const popularityEl = document.getElementById("detail-popularity");
-  const genresEl     = document.getElementById("detail-genres");
-  const tmdbBtn      = document.getElementById("btn-tmdb");
+const initDetailPage = () => {
+  const detailEl     = document.querySelector("#film-detail");
+  const breadcrumb   = document.querySelector("#breadcrumb-title");
+  const titleEl      = document.querySelector("#detail-title");
+  const yearEl       = document.querySelector("#detail-year");
+  const runtimeEl    = document.querySelector("#detail-runtime");
+  const languageEl   = document.querySelector("#detail-language");
+  const taglineEl    = document.querySelector("#detail-tagline");
+  const overviewEl   = document.querySelector("#detail-overview");
+  const ratingEl     = document.querySelector("#detail-rating");
+  const votesEl      = document.querySelector("#detail-votes");
+  const popularityEl = document.querySelector("#detail-popularity");
+  const genresEl     = document.querySelector("#detail-genres");
+  const tmdbBtn      = document.querySelector("#btn-tmdb");
 
   const formatRuntime = (min) => {
     if (!min) return "";
@@ -378,7 +370,7 @@ function initDetailPage() {
     detailEl.classList.remove("hidden");
   };
 
-  async function loadDetail(movieId) {
+  const loadDetail = async (movieId) => {
     try {
       const detail = await fetchMovieDetail(movieId);
       detailEl.classList.remove("hidden");
@@ -386,7 +378,7 @@ function initDetailPage() {
       breadcrumb.textContent = detail.title;
 
       const posterUrl = imgUrl(detail.poster_path);
-      const posterEl  = document.getElementById("detail-poster");
+      const posterEl  = document.querySelector("#detail-poster");
       if (posterUrl) { posterEl.src = posterUrl; posterEl.alt = detail.title; }
       else            { posterEl.closest("div").style.display = "none"; }
 
@@ -417,24 +409,24 @@ function initDetailPage() {
           : "Gagal memuat data. Coba refresh halaman."
       );
     }
-  }
+  };
 
   const movieId = new URLSearchParams(location.search).get("id");
   movieId ? loadDetail(movieId) : showError("Film tidak ditemukan.");
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // MY WATCHLIST PAGE  (merged from mylist.js — DRY: reuses buildPoster,
 //                    buildTitleRow, buildRatingRow, buildOverview, buildCardShell)
 // ══════════════════════════════════════════════════════════════════════════════
 
-function initMyListPage() {
-  const listEl  = document.getElementById("mylist-films");
-  const emptyEl = document.getElementById("empty-state");
-  const countEl = document.getElementById("list-count");
+const initMyListPage = () => {
+  const listEl  = document.querySelector("#mylist-films");
+  const emptyEl = document.querySelector("#empty-state");
+  const countEl = document.querySelector("#list-count");
 
   /** Build a watchlist card (extends shared primitives with a Remove button) */
-  function createMyListCard(film) {
+  const createMyListCard = (film) => {
     const li = buildCardShell();
     li.dataset.id = film.id;
 
@@ -472,9 +464,9 @@ function initMyListPage() {
 
     li.append(buildPoster(film), info);
     return li;
-  }
+  };
 
-  function renderMyList() {
+  const renderMyList = () => {
     const list = getMyList();
     countEl.textContent = list.length ? `(${list.length})` : "";
 
@@ -488,7 +480,15 @@ function initMyListPage() {
     emptyEl.classList.add("hidden");
     emptyEl.style.display = "";
     listEl.replaceChildren(...list.map(createMyListCard));
-  }
+  };
 
   renderMyList();
-}
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INIT — auto-detect current page (must be after all function definitions)
+// ══════════════════════════════════════════════════════════════════════════════
+
+if      (document.querySelector("#film-list"))   initFilmsPage();
+else if (document.querySelector("#film-detail"))  initDetailPage();
+else if (document.querySelector("#mylist-films")) initMyListPage();

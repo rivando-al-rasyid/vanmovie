@@ -13,23 +13,23 @@ const ERROR_IDS = ["email-error", "password-error", "confirm-error"];
 // SIGNUP PAGE INIT
 // ══════════════════════════════════════════════════════════════════════════════
 
-function initSignupPage() {
+const initSignupPage = () => {
   // Redirect if already logged in
   if (Session.get()) {
     window.location.href = "films.html";
     return;
   }
 
-  const form      = document.getElementById("signup-form");
+  const form      = document.querySelector("#signup-form");
   const submitBtn = form?.querySelector("[type='submit']");
 
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
     AuthUtils.clearErrors(...ERROR_IDS);
 
-    const email    = document.getElementById("email").value.trim().toLowerCase();
-    const password = document.getElementById("password").value;
-    const confirm  = document.getElementById("confirm").value;
+    const email    = document.querySelector("#email").value.trim().toLowerCase();
+    const password = document.querySelector("#password").value;
+    const confirm  = document.querySelector("#confirm").value;
 
     // ── Validation ───────────────────────────────────────────────────────────
 
@@ -69,15 +69,15 @@ function initSignupPage() {
     if (submitBtn) submitBtn.textContent = "Account created! Redirecting…";
     setTimeout(() => (window.location.href = "films.html"), 600);
   });
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ENTRY — run only when the signup form exists on this page
 // ══════════════════════════════════════════════════════════════════════════════
 
-function onReady() {
-  if (document.getElementById("signup-form")) initSignupPage();
-}
+const onReady = () => {
+  if (document.querySelector("#signup-form")) initSignupPage();
+};
 
 document.addEventListener("headerReady", onReady, { once: true });
 

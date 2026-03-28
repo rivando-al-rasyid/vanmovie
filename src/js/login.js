@@ -15,17 +15,17 @@ const ERROR_IDS = ["login-email-error", "login-password-error", "login-general-e
 // LOGIN PAGE INIT
 // ══════════════════════════════════════════════════════════════════════════════
 
-function initLoginPage() {
+const initLoginPage = () => {
   // Redirect if already logged in
   if (Session.get()) {
     window.location.href = "films.html";
     return;
   }
 
-  const emailInp    = document.getElementById("login-email");
-  const passInp     = document.getElementById("login-password");
+  const emailInp    = document.querySelector("#login-email");
+  const passInp     = document.querySelector("#login-password");
   const loginBtn    = document.querySelector(".btn-login");
-  const rememberChk = document.getElementById("remember-me");
+  const rememberChk = document.querySelector("#remember-me");
 
   // Pre-fill remembered email
   const savedEmail = localStorage.getItem(REMEMBER_KEY);
@@ -85,15 +85,15 @@ function initLoginPage() {
   [emailInp, passInp].forEach((inp) =>
     inp?.addEventListener("keydown", (e) => e.key === "Enter" && handleLogin())
   );
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ENTRY — run only when the login form exists on this page
 // ══════════════════════════════════════════════════════════════════════════════
 
-function onReady() {
-  if (document.getElementById("login-form")) initLoginPage();
-}
+const onReady = () => {
+  if (document.querySelector(".login-form")) initLoginPage();
+};
 
 // auth.js fires "headerReady" after injecting the navbar; wait for it.
 document.addEventListener("headerReady", onReady, { once: true });

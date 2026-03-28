@@ -15,7 +15,7 @@ const CONFIG = {
  * @param {object} params
  * @returns
  */
-export async function tmdbFetch(path, params = {}) {
+export const tmdbFetch = async (path, params = {}) => {
   if (!CONFIG.API_KEY) {
     throw new Error("API_KEY is not set. Edit CONFIG in fetchData.js.");
   }
@@ -33,23 +33,23 @@ export async function tmdbFetch(path, params = {}) {
     throw new Error(`TMDB ${res.status}: ${res.statusText} (${path})`);
   }
   return res.json();
-}
+};
 
 // ── Genre helpers ─────────────────────────────────────────────────────────────
 
-export async function fetchGenreList() {
+export const fetchGenreList = async () => {
   const data = await tmdbFetch("/genre/movie/list");
   return data.genres || [];
-}
+};
 
 // ── Movie helpers ─────────────────────────────────────────────────────────────
 /** */
-export async function fetchMovies({
+export const fetchMovies = async ({
   page     = 1,
   sortDesc = true,
   genreId  = 0,
   minVotes = 500,
-} = {}) {
+} = {}) => {
   const params = {
     sort_by:          sortDesc ? "vote_average.desc" : "vote_average.asc",
     "vote_count.gte": genreId ? 200 : minVotes,
@@ -58,36 +58,35 @@ export async function fetchMovies({
   if (genreId) params.with_genres = genreId;
 
   return tmdbFetch("/discover/movie", params);
-}
+};
+
 /**
  *
  * @param {number} movieId
  * @returns
  */
-export async function fetchMovieDetail(movieId) {
+export const fetchMovieDetail = async (movieId) => {
   if (!movieId) throw new Error("movieId is required.");
   return tmdbFetch(`/movie/${movieId}`);
-}
+};
 
 // ── Image URL ─────────────────────────────────────────────────────────────────
 
-export function imgUrl(path, size = "w500") {
+export const imgUrl = (path, size = "w500") => {
   if (!path) return null;
   return (size === "original" ? CONFIG.IMG_ORIG : CONFIG.IMG_BASE) + path;
-}
+};
 
 // ── Data normaliser ───────────────────────────────────────────────────────────
 // Converts a raw TMDB movie object into a consistent shape used across the app.
 
-export function toFilmData(movie) {
-  return {
-    id:           movie.id,
-    title:        movie.title,
-    poster_path:  movie.poster_path  ?? null,
-    vote_average: movie.vote_average ?? 0,
-    vote_count:   movie.vote_count   ?? 0,
-    release_date: movie.release_date ?? "",
-    genre_ids:    movie.genre_ids    ?? (movie.genres || []).map((g) => g.id),
-    overview:     movie.overview     ?? "",
-  };
-}
+export const toFilmData = (movie) => ({
+  id:           movie.id,
+  title:        movie.title,
+  poster_path:  movie.poster_path  ?? null,
+  vote_average: movie.vote_average ?? 0,
+  vote_count:   movie.vote_count   ?? 0,
+  release_date: movie.release_date ?? "",
+  genre_ids:    movie.genre_ids    ?? (movie.genres || []).map((g) => g.id),
+  overview:     movie.overview     ?? "",
+});

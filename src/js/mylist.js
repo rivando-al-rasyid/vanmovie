@@ -4,7 +4,7 @@ import { getMyList, saveMyList } from "./movies.js";
 
 // ── Film card builder ─────────────────────────────────────────────────────────
 
-function createFilmCard(film) {
+const createFilmCard = (film) => {
   const poster    = imgUrl(film.poster_path);
   const rating    = film.vote_average ? film.vote_average.toFixed(1) : "N/A";
   const year      = film.release_date ? film.release_date.split("-")[0] : "";
@@ -95,15 +95,15 @@ function createFilmCard(film) {
   li.appendChild(info);
 
   return li;
-}
+};
 
 // ── Render ────────────────────────────────────────────────────────────────────
 
-function renderMyList() {
+const renderMyList = () => {
   const list    = getMyList();
-  const listEl  = document.getElementById("mylist-films");
-  const emptyEl = document.getElementById("empty-state");
-  const countEl = document.getElementById("list-count");
+  const listEl  = document.querySelector("#mylist-films");
+  const emptyEl = document.querySelector("#empty-state");
+  const countEl = document.querySelector("#list-count");
 
   countEl.textContent = list.length ? `(${list.length})` : "";
 
@@ -117,7 +117,7 @@ function renderMyList() {
   emptyEl.classList.add("hidden");
   emptyEl.style.display = "";
   listEl.replaceChildren(...list.map(createFilmCard));
-}
+};
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
