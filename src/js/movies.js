@@ -1,46 +1,105 @@
-// ── movies.js — Films list + Film detail + Watchlist helpers ─────────────────
-// Single entry-point for both films.html and detail.html.
-// Auto-detects the current page and runs the appropriate logic.
+// ── movies.js — Films list + Film detail + My Watchlist page ─────────────────
+// Single module that handles films.html, detail.html, AND mylist.html.
+// mylist.js has been merged here (DRY — shared card builder, watchlist helpers).
 
 import { fetchMovies, fetchMovieDetail, fetchGenreList, imgUrl, toFilmData } from "./fetchData.js";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// WATCHLIST HELPERS
+// WATCHLIST HELPERS  (shared by films, detail, and mylist sections)
 // ══════════════════════════════════════════════════════════════════════════════
 
 const STORAGE_KEY = "moviespace_mylist";
 
 export function getMyList() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch { return []; }
 }
 
 export function saveMyList(list) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 }
 
-export function isInList(id) {
-  return getMyList().some((film) => film.id === id);
-}
+export const isInList  = (id)       => getMyList().some((f) => f.id === id);
+export const removeFromList = (id)  => saveMyList(getMyList().filter((f) => f.id !== id));
 
 export function toggleInList(filmData) {
   const list = getMyList();
-  const idx  = list.findIndex((film) => film.id === filmData.id);
-
-  if (idx === -1) {
-    list.push(filmData);   // add
-  } else {
-    list.splice(idx, 1);   // remove
-  }
-
+  const idx  = list.findIndex((f) => f.id === filmData.id);
+  idx === -1 ? list.push(filmData) : list.splice(idx, 1);
   saveMyList(list);
-  return idx === -1; // true = added, false = removed
+  return idx === -1; // true = added
 }
 
-// ── Button state helpers ──────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// SHARED CARD PRIMITIVES  (DRY — used by film-list card AND mylist card)
+// ══════════════════════════════════════════════════════════════════════════════
+
+/** Build the poster <img> or a "No Poster" placeholder */
+function buildPoster(film) {
+  const poster = imgUrl(film.poster_path);
+  if (poster) {
+    const img     = document.createElement("img");
+    img.src       = poster;
+    img.alt       = film.title;
+    img.loading   = "lazy";
+    img.className = "w-20 h-28 object-cover rounded-lg shrink-0";
+    img.style.backgroundColor = "var(--bg-card)";
+    img.addEventListener("error", () => { img.src = ""; });
+    return img;
+  }
+  const ph = document.createElement("div");
+  ph.className  = "w-20 h-28 shrink-0 rounded-lg flex items-center justify-center text-xs text-center p-1";
+  ph.style.cssText = "background-color:var(--bg-card);color:var(--text-faint)";
+  ph.textContent   = "No Poster";
+  return ph;
+}
+
+/** Build the title row: "Title <year>" */
+function buildTitleRow(film) {
+  const year = film.release_date ? film.release_date.split("-")[0] : "";
+  const div  = document.createElement("div");
+  div.className = "text-sm font-semibold";
+  div.appendChild(document.createTextNode(film.title + " "));
+  const yr = document.createElement("span");
+  yr.className   = "font-normal text-xs";
+  yr.textContent = year;
+  div.appendChild(yr);
+  return div;
+}
+
+/** Build the IMDb rating row */
+function buildRatingRow(film) {
+  const rating = film.vote_average ? film.vote_average.toFixed(1) : "N/A";
+  const row    = document.createElement("div");
+  row.className = "flex items-center gap-2 text-xs";
+  row.innerHTML = `
+    <span class="tmdb-badge">IMDb</span>
+    <span class="font-semibold">${rating} ★</span>
+    <span>(${(film.vote_count || 0).toLocaleString()} votes)</span>
+  `;
+  return row;
+}
+
+/** Build the overview <p> (truncated to 200 chars) */
+function buildOverview(film) {
+  const desc = film.overview || "No description available.";
+  const p    = document.createElement("p");
+  p.className   = "text-xs leading-relaxed m-0";
+  p.textContent = desc.length > 200 ? desc.slice(0, 200) + "…" : desc;
+  return p;
+}
+
+/** Build a styled <li> card shell with hover effect */
+function buildCardShell(extraClass = "") {
+  const li = document.createElement("li");
+  li.className  = `flex gap-4 rounded-xl p-4 transition-colors ${extraClass}`.trim();
+  li.style.cssText = "background-color:var(--bg-card);border:1px solid var(--border-subtle)";
+  li.addEventListener("mouseover", () => (li.style.borderColor = "var(--border)"));
+  li.addEventListener("mouseout",  () => (li.style.borderColor = "var(--border-subtle)"));
+  return li;
+}
+
+// ── Watchlist button helpers ──────────────────────────────────────────────────
 
 function setAdded(btn) {
   btn.textContent       = "Remove from Watchlist";
@@ -54,13 +113,10 @@ function setRemoved(btn) {
   btn.style.color       = "var(--text-muted)";
 }
 
-// ── createWatchlistBtn ────────────────────────────────────────────────────────
-
 export function createWatchlistBtn(filmData, extraClasses = "") {
   const btn = document.createElement("button");
   btn.className = ["btn-watchlist", "transition-colors", "cursor-pointer", "bg-transparent", extraClasses]
-    .filter(Boolean)
-    .join(" ");
+    .filter(Boolean).join(" ");
   btn.style.border = "1px solid var(--border-subtle)";
 
   isInList(filmData.id) ? setAdded(btn) : setRemoved(btn);
@@ -69,63 +125,46 @@ export function createWatchlistBtn(filmData, extraClasses = "") {
     e.stopPropagation();
     const added = toggleInList(filmData);
     added ? setAdded(btn) : setRemoved(btn);
-
     btn.dispatchEvent(new CustomEvent("watchlist-change", {
       bubbles: true,
-      detail: { filmData, added },
+      detail:  { filmData, added },
     }));
   });
-
   return btn;
 }
 
-// ── myListBtn ─────────────────────────────────────────────────────────────────
-
+/** Wire up the #btn-mylist button on the detail page */
 export function myListBtn(filmData) {
   const btn = document.getElementById("btn-mylist");
   if (!btn) return;
-
   const update = () => (isInList(filmData.id) ? setAdded(btn) : setRemoved(btn));
-
   btn.dataset.film = JSON.stringify(filmData);
   update();
-
-  btn.addEventListener("click", () => {
-    toggleInList(filmData);
-    update();
-  });
+  btn.addEventListener("click", () => { toggleInList(filmData); update(); });
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// INIT
+// INIT — auto-detect current page
 // ══════════════════════════════════════════════════════════════════════════════
 
-
-if (document.getElementById("film-list")) {
-  initFilmsPage();
-} else if (document.getElementById("film-detail")) {
-  initDetailPage();
-}
+if      (document.getElementById("film-list"))   initFilmsPage();
+else if (document.getElementById("film-detail"))  initDetailPage();
+else if (document.getElementById("mylist-films")) initMyListPage();
 
 // ══════════════════════════════════════════════════════════════════════════════
 // FILMS PAGE
 // ══════════════════════════════════════════════════════════════════════════════
 
 async function initFilmsPage() {
-
-  // ── State ─────────────────────────────────────────────────────────────────────
-
   let allFilms        = [];
   let genres          = {};
   let activeGenreId   = 0;
   let sortDesc        = true;
   let currentPage     = 1;
-  const perPage       = 10;
   let totalTMDBPages  = 1;
   let currentTMDBPage = 1;
   let totalResults    = 0;
-
-  // ── DOM refs ──────────────────────────────────────────────────────────────────
+  const perPage       = 10;
 
   const filmList  = document.getElementById("film-list");
   const pageTitle = document.getElementById("page-title");
@@ -135,53 +174,12 @@ async function initFilmsPage() {
   const genreBtn  = document.getElementById("genre-btn");
   const sortBtn   = document.getElementById("sort-btn");
 
-  // ── Film card builder ─────────────────────────────────────────────────────────
+  // ── Film card (films.html) ──────────────────────────────────────────────────
 
   function createFilmCard(film) {
-    const poster     = imgUrl(film.poster_path);
-    const rating     = film.vote_average ? film.vote_average.toFixed(1) : "N/A";
-    const year       = film.release_date ? film.release_date.split("-")[0] : "";
     const filmGenres = (film.genre_ids || []).map((id) => genres[id]).filter(Boolean);
-    const desc       = film.overview || "No description available.";
-    const truncDesc  = desc.length > 200 ? desc.slice(0, 200) + "…" : desc;
-
-    const li = document.createElement("li");
+    const li         = buildCardShell();
     li.dataset.filmId = film.id;
-    li.className      = "flex gap-4 rounded-xl p-4 transition-colors";
-    li.style.cssText  = "background-color:var(--bg-card);border:1px solid var(--border-subtle)";
-    li.addEventListener("mouseover", () => (li.style.borderColor = "var(--border)"));
-    li.addEventListener("mouseout",  () => (li.style.borderColor = "var(--border-subtle)"));
-
-    // Poster
-    if (poster) {
-      const img     = document.createElement("img");
-      img.src       = poster;
-      img.alt       = film.title;
-      img.loading   = "lazy";
-      img.className = "w-20 h-28 object-cover rounded-lg shrink-0";
-      img.style.backgroundColor = "var(--bg-card)";
-      img.addEventListener("error", () => { img.src = ""; });
-      li.appendChild(img);
-    } else {
-      const placeholder = document.createElement("div");
-      placeholder.className = "w-20 h-28 shrink-0 rounded-lg flex items-center justify-center text-xs text-center p-1";
-      placeholder.style.cssText = "background-color:var(--bg-card);color:var(--text-faint)";
-      placeholder.textContent   = "No Poster";
-      li.appendChild(placeholder);
-    }
-
-    // Info column
-    const info = document.createElement("div");
-    info.className = "flex flex-col gap-1.5 min-w-0";
-
-    // Title + year
-    const titleRow = document.createElement("div");
-    titleRow.className = "text-sm font-semibold";
-    titleRow.appendChild(document.createTextNode(film.title + " "));
-    const yearSpan = document.createElement("span");
-    yearSpan.className   = "font-normal text-xs";
-    yearSpan.textContent = year;
-    titleRow.appendChild(yearSpan);
 
     // Genre tags
     const tagsRow = document.createElement("div");
@@ -193,43 +191,24 @@ async function initFilmsPage() {
       tagsRow.appendChild(tag);
     });
 
-    // Rating
-    const ratingRow = document.createElement("div");
-    ratingRow.className = "flex items-center gap-2 text-xs";
-    const badge = document.createElement("span");
-    badge.className   = "tmdb-badge";
-    badge.textContent = "IMDb";
-    const ratingVal = document.createElement("span");
-    ratingVal.className   = "font-semibold";
-    ratingVal.textContent = `${rating} ★`;
-    const votes = document.createElement("span");
-    votes.textContent = `(${(film.vote_count || 0).toLocaleString()} votes)`;
-    ratingRow.append(badge, ratingVal, votes);
-
-    // Overview
-    const overview = document.createElement("p");
-    overview.className   = "text-xs leading-relaxed m-0";
-    overview.textContent = truncDesc;
-
     // Action buttons
-    const actions = document.createElement("div");
+    const actions    = document.createElement("div");
     actions.className = "flex gap-2 mt-1";
-
     const detailLink = document.createElement("a");
     detailLink.href        = `detail.html?id=${film.id}`;
     detailLink.className   = "btn-primary text-xs px-3 py-1.5 rounded-full no-underline";
     detailLink.textContent = "View Details";
+    actions.append(detailLink, createWatchlistBtn(toFilmData(film), "text-xs px-3 py-1.5 rounded-full"));
 
-    const watchlistBtn = createWatchlistBtn(toFilmData(film), "text-xs px-3 py-1.5 rounded-full");
+    const info = document.createElement("div");
+    info.className = "flex flex-col gap-1.5 min-w-0";
+    info.append(buildTitleRow(film), tagsRow, buildRatingRow(film), buildOverview(film), actions);
 
-    actions.append(detailLink, watchlistBtn);
-    info.append(titleRow, tagsRow, ratingRow, overview, actions);
-    li.appendChild(info);
-
+    li.append(buildPoster(film), info);
     return li;
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   function renderFilms() {
     if (!allFilms.length) {
@@ -242,16 +221,13 @@ async function initFilmsPage() {
       pageTitle.textContent = "All Films (0)";
       return;
     }
-
-    const start     = (currentPage - 1) * perPage;
-    const pageFilms = allFilms.slice(start, start + perPage);
-    filmList.replaceChildren(...pageFilms.map(createFilmCard));
+    const start = (currentPage - 1) * perPage;
+    filmList.replaceChildren(...allFilms.slice(start, start + perPage).map(createFilmCard));
   }
 
   function renderPagination() {
-    const localPages = Math.ceil(allFilms.length / perPage);
-    const grandTotal = Math.min(totalResults, 5000);
-
+    const localPages  = Math.ceil(allFilms.length / perPage);
+    const grandTotal  = Math.min(totalResults, 5000);
     pageTitle.textContent = `All Films (${grandTotal.toLocaleString()}+)`;
 
     const startItem = (currentTMDBPage - 1) * 20 + (currentPage - 1) * perPage + 1;
@@ -263,11 +239,8 @@ async function initFilmsPage() {
 
     const makeArrow = (label, symbol, disabled, onClick) => {
       const btn = document.createElement("button");
-      btn.type        = "button";
-      btn.ariaLabel   = label;
-      btn.textContent = symbol;
-      btn.disabled    = disabled;
-      btn.className   = "disabled:opacity-25 disabled:cursor-not-allowed transition-colors text-lg leading-none cursor-pointer bg-transparent border-none p-0";
+      Object.assign(btn, { type: "button", ariaLabel: label, textContent: symbol, disabled });
+      btn.className = "disabled:opacity-25 disabled:cursor-not-allowed transition-colors text-lg leading-none cursor-pointer bg-transparent border-none p-0";
       btn.style.color = "var(--text-muted)";
       btn.addEventListener("mouseover", () => { if (!disabled) btn.style.color = "var(--text)"; });
       btn.addEventListener("mouseout",  () => {                btn.style.color = "var(--text-muted)"; });
@@ -275,50 +248,28 @@ async function initFilmsPage() {
       return btn;
     };
 
-    const prevBtn = makeArrow("Previous page", "‹", isFirst, () => {
-      if (currentPage > 1) {
-        currentPage--;
-        renderFilms();
-        renderPagination();
-      } else if (currentTMDBPage > 1) {
-        currentTMDBPage--;
-        currentPage = Math.ceil(20 / perPage);
-        loadFilms();
-      }
-      window.scrollTo(0, 0);
-    });
-
-    const nextBtn = makeArrow("Next page", "›", isLast, () => {
-      if (currentPage < localPages) {
-        currentPage++;
-        renderFilms();
-        renderPagination();
-      } else if (currentTMDBPage < totalTMDBPages) {
-        currentTMDBPage++;
-        currentPage = 1;
-        loadFilms();
-      }
-      window.scrollTo(0, 0);
-    });
-
-    pageBtns.replaceChildren(prevBtn, nextBtn);
+    pageBtns.replaceChildren(
+      makeArrow("Previous page", "‹", isFirst, () => {
+        if (currentPage > 1) { currentPage--; renderFilms(); renderPagination(); }
+        else if (currentTMDBPage > 1) { currentTMDBPage--; currentPage = Math.ceil(20 / perPage); loadFilms(); }
+        window.scrollTo(0, 0);
+      }),
+      makeArrow("Next page", "›", isLast, () => {
+        if (currentPage < localPages) { currentPage++; renderFilms(); renderPagination(); }
+        else if (currentTMDBPage < totalTMDBPages) { currentTMDBPage++; currentPage = 1; loadFilms(); }
+        window.scrollTo(0, 0);
+      })
+    );
   }
 
-  // ── Data loading ──────────────────────────────────────────────────────────────
+  // ── Data loading ────────────────────────────────────────────────────────────
 
   async function loadFilms() {
     try {
-      const data = await fetchMovies({
-        page:     currentTMDBPage,
-        sortDesc,
-        genreId:  activeGenreId,
-        minVotes: 500,
-      });
-
+      const data     = await fetchMovies({ page: currentTMDBPage, sortDesc, genreId: activeGenreId, minVotes: 500 });
       totalTMDBPages = Math.min(data.total_pages || 1, 250);
       totalResults   = data.total_results || 0;
       allFilms       = data.results || [];
-
       renderFilms();
       renderPagination();
     } catch {
@@ -331,73 +282,52 @@ async function initFilmsPage() {
     }
   }
 
-  // ── Genre menu ────────────────────────────────────────────────────────────────
+  // ── Genre menu ──────────────────────────────────────────────────────────────
 
   function buildGenreMenu(list) {
-    const allItem = document.createElement("li");
-    allItem.className       = "dropdown-item px-4 py-2 text-sm cursor-pointer";
-    allItem.textContent     = "All Genres";
-    allItem.dataset.genreId = "0";
-
-    const items = [allItem, ...list.map((g) => {
+    const items = [{ id: 0, name: "All Genres" }, ...list].map((g) => {
       const li = document.createElement("li");
       li.className       = "dropdown-item px-4 py-2 text-sm cursor-pointer";
       li.textContent     = g.name;
       li.dataset.genreId = g.id;
       return li;
-    })];
-
+    });
     genreMenu.replaceChildren(...items);
-
     genreMenu.addEventListener("click", (e) => {
       const item = e.target.closest(".dropdown-item");
-      if (!item) return;
-      filterByGenre(Number(item.dataset.genreId), item.textContent.trim());
+      if (item) filterByGenre(Number(item.dataset.genreId), item.textContent.trim());
     });
   }
 
-  // ── Controls ──────────────────────────────────────────────────────────────────
-
-  function toggleGenreMenu() {
-    genreMenu.classList.toggle("hidden");
-    genreMenu.classList.toggle("open");
-  }
-
   function filterByGenre(id, name) {
-    activeGenreId   = id;
-    currentTMDBPage = 1;
-    currentPage     = 1;
-
-    genreMenu.classList.add("hidden");
-    genreMenu.classList.remove("open");
-
+    activeGenreId = id; currentTMDBPage = 1; currentPage = 1;
+    genreMenu.classList.add("hidden"); genreMenu.classList.remove("open");
     genreBtn.innerHTML = `${name.toUpperCase()} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`;
     genreBtn.classList.toggle("active-filter", id !== 0);
-
     loadFilms();
   }
 
-  function toggleSort() {
+  // ── Controls ────────────────────────────────────────────────────────────────
+
+  genreBtn.addEventListener("click", () => {
+    genreMenu.classList.toggle("hidden");
+    genreMenu.classList.toggle("open");
+  });
+
+  sortBtn.addEventListener("click", () => {
     sortDesc = !sortDesc;
     sortBtn.innerHTML = `SORT BY IMDb ${sortDesc ? "↓" : "↑"} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
-    currentTMDBPage = 1;
-    currentPage     = 1;
+    currentTMDBPage = 1; currentPage = 1;
     loadFilms();
-  }
-
-  // ── Event listeners ───────────────────────────────────────────────────────────
-
-  genreBtn.addEventListener("click", toggleGenreMenu);
-  sortBtn.addEventListener("click", toggleSort);
+  });
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest("#genre-btn") && !e.target.closest("#genre-menu")) {
-      genreMenu.classList.add("hidden");
-      genreMenu.classList.remove("open");
+      genreMenu.classList.add("hidden"); genreMenu.classList.remove("open");
     }
   });
 
-  // ── Init ──────────────────────────────────────────────────────────────────────
+  // ── Init ────────────────────────────────────────────────────────────────────
 
   try {
     const genreList = await fetchGenreList();
@@ -421,9 +351,6 @@ async function initFilmsPage() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 function initDetailPage() {
-
-  // ── DOM refs ──────────────────────────────────────────────────────────────────
-
   const detailEl     = document.getElementById("film-detail");
   const breadcrumb   = document.getElementById("breadcrumb-title");
   const titleEl      = document.getElementById("detail-title");
@@ -438,47 +365,31 @@ function initDetailPage() {
   const genresEl     = document.getElementById("detail-genres");
   const tmdbBtn      = document.getElementById("btn-tmdb");
 
-  // ── Utilities ─────────────────────────────────────────────────────────────────
-
-  function formatRuntime(minutes) {
-    if (!minutes) return "";
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
+  const formatRuntime = (min) => {
+    if (!min) return "";
+    const h = Math.floor(min / 60), m = min % 60;
     return h ? `${h}h ${m}m` : `${m}m`;
-  }
+  };
 
-  function showError(message) {
+  const showError = (msg) => {
     detailEl.replaceChildren(
-      Object.assign(document.createElement("p"), {
-        className:   "py-8 text-center",
-        textContent: message,
-      })
+      Object.assign(document.createElement("p"), { className: "py-8 text-center", textContent: msg })
     );
     detailEl.classList.remove("hidden");
-  }
-
-  // ── Load & render ─────────────────────────────────────────────────────────────
+  };
 
   async function loadDetail(movieId) {
     try {
       const detail = await fetchMovieDetail(movieId);
-
       detailEl.classList.remove("hidden");
-
       document.title         = `MovieSpace — ${detail.title}`;
       breadcrumb.textContent = detail.title;
 
-      // Poster
       const posterUrl = imgUrl(detail.poster_path);
       const posterEl  = document.getElementById("detail-poster");
-      if (posterUrl) {
-        posterEl.src = posterUrl;
-        posterEl.alt = detail.title;
-      } else {
-        posterEl.closest("div").style.display = "none";
-      }
+      if (posterUrl) { posterEl.src = posterUrl; posterEl.alt = detail.title; }
+      else            { posterEl.closest("div").style.display = "none"; }
 
-      // Basic info
       titleEl.textContent    = detail.title;
       yearEl.textContent     = detail.release_date ? detail.release_date.split("-")[0] : "";
       runtimeEl.textContent  = formatRuntime(detail.runtime);
@@ -486,44 +397,98 @@ function initDetailPage() {
       taglineEl.textContent  = detail.tagline  || "";
       overviewEl.textContent = detail.overview || "No description available.";
 
-      // Rating
       const rating = detail.vote_average ? detail.vote_average.toFixed(1) : "N/A";
       ratingEl.textContent     = `${rating} ★`;
       votesEl.textContent      = detail.vote_count  ? `(${detail.vote_count.toLocaleString()} votes)`  : "";
       popularityEl.textContent = detail.popularity  ? `Popularity: ${detail.popularity.toFixed(0)}`    : "";
 
-      // Genre tags
-      const tags = (detail.genres || []).map((g) =>
-        Object.assign(document.createElement("span"), {
-          className:   "tag",
-          textContent: g.name,
-        })
+      genresEl.replaceChildren(
+        ...(detail.genres || []).map((g) =>
+          Object.assign(document.createElement("span"), { className: "tag", textContent: g.name })
+        )
       );
-      genresEl.replaceChildren(...tags);
 
-      // TMDB link
       tmdbBtn.href = `https://www.themoviedb.org/movie/${movieId}`;
-
-      // Watchlist button
       myListBtn(toFilmData(detail));
-
     } catch (err) {
-      console.error(err);
       showError(
         err.message.includes("API_KEY")
           ? "⚠️ API Key belum diset. Edit CONFIG di fetchData.js"
-          : "Gagal memuat data. Coba refresh halaman.",
+          : "Gagal memuat data. Coba refresh halaman."
       );
     }
   }
 
-  // ── Init ──────────────────────────────────────────────────────────────────────
-
   const movieId = new URLSearchParams(location.search).get("id");
+  movieId ? loadDetail(movieId) : showError("Film tidak ditemukan.");
+}
 
-  if (!movieId) {
-    showError("Film tidak ditemukan.");
-  } else {
-    loadDetail(movieId);
+// ══════════════════════════════════════════════════════════════════════════════
+// MY WATCHLIST PAGE  (merged from mylist.js — DRY: reuses buildPoster,
+//                    buildTitleRow, buildRatingRow, buildOverview, buildCardShell)
+// ══════════════════════════════════════════════════════════════════════════════
+
+function initMyListPage() {
+  const listEl  = document.getElementById("mylist-films");
+  const emptyEl = document.getElementById("empty-state");
+  const countEl = document.getElementById("list-count");
+
+  /** Build a watchlist card (extends shared primitives with a Remove button) */
+  function createMyListCard(film) {
+    const li = buildCardShell();
+    li.dataset.id = film.id;
+
+    // Remove button
+    const removeBtn = document.createElement("button");
+    Object.assign(removeBtn, { type: "button", textContent: "Remove" });
+    removeBtn.className = "btn-remove text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer bg-transparent";
+    removeBtn.style.cssText = "border:1px solid var(--border-subtle);color:var(--text-muted)";
+    removeBtn.addEventListener("mouseover", () => {
+      removeBtn.style.borderColor = "var(--error)";
+      removeBtn.style.color       = "var(--error)";
+    });
+    removeBtn.addEventListener("mouseout", () => {
+      removeBtn.style.borderColor = "var(--border-subtle)";
+      removeBtn.style.color       = "var(--text-muted)";
+    });
+    removeBtn.addEventListener("click", () => {
+      removeFromList(film.id);
+      renderMyList();
+    });
+
+    // Detail link
+    const detailLink = document.createElement("a");
+    detailLink.href        = `detail.html?id=${film.id}`;
+    detailLink.className   = "btn-primary text-xs px-3 py-1.5 rounded-full no-underline";
+    detailLink.textContent = "View Details";
+
+    const actions = document.createElement("div");
+    actions.className = "flex gap-2 mt-1";
+    actions.append(detailLink, removeBtn);
+
+    const info = document.createElement("div");
+    info.className = "flex flex-col gap-1.5 min-w-0 flex-1";
+    info.append(buildTitleRow(film), buildRatingRow(film), buildOverview(film), actions);
+
+    li.append(buildPoster(film), info);
+    return li;
   }
+
+  function renderMyList() {
+    const list = getMyList();
+    countEl.textContent = list.length ? `(${list.length})` : "";
+
+    if (!list.length) {
+      listEl.replaceChildren();
+      emptyEl.classList.remove("hidden");
+      emptyEl.style.display = "flex";
+      return;
+    }
+
+    emptyEl.classList.add("hidden");
+    emptyEl.style.display = "";
+    listEl.replaceChildren(...list.map(createMyListCard));
+  }
+
+  renderMyList();
 }

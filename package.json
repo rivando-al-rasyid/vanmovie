@@ -2,23 +2,26 @@
   "name": "vanmovie",
   "version": "1.0.0",
   "description": "TMDB-powered movie browser — no build tools required.",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "keywords": [],
+  "homepage": "https://github.com/rivando-al-rasyid/vanmovie#readme",
+  "bugs": {
+    "url": "https://github.com/rivando-al-rasyid/vanmovie/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rivando-al-rasyid/vanmovie.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
+  "author": "rivando al rasyid",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/rivando-al-rasyid/vanmovie/issues"
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "homepage": "https://github.com/rivando-al-rasyid/vanmovie#readme",
   "devDependencies": {
     "prettier": "3.8.1"
+  },
+  "dependencies": {
+    "express": "^5.2.1"
   }
 }

@@ -9,7 +9,12 @@ const CONFIG = {
 };
 
 // ── Core fetcher ──────────────────────────────────────────────────────────────
-
+/**
+ *
+ * @param {string} path
+ * @param {object} params
+ * @returns
+ */
 export async function tmdbFetch(path, params = {}) {
   if (!CONFIG.API_KEY) {
     throw new Error("API_KEY is not set. Edit CONFIG in fetchData.js.");
@@ -38,7 +43,7 @@ export async function fetchGenreList() {
 }
 
 // ── Movie helpers ─────────────────────────────────────────────────────────────
-
+/** */
 export async function fetchMovies({
   page     = 1,
   sortDesc = true,
@@ -54,7 +59,11 @@ export async function fetchMovies({
 
   return tmdbFetch("/discover/movie", params);
 }
-
+/**
+ *
+ * @param {number} movieId
+ * @returns
+ */
 export async function fetchMovieDetail(movieId) {
   if (!movieId) throw new Error("movieId is required.");
   return tmdbFetch(`/movie/${movieId}`);
