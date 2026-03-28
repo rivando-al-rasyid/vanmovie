@@ -308,7 +308,7 @@ const initFilmsPage = async () => {
 
   sortBtn.addEventListener("click", () => {
     sortDesc = !sortDesc;
-    sortBtn.innerHTML = `SORT BY IMDb ${sortDesc ? "↓" : "↑"} <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
+    sortBtn.innerHTML = `SORT BY IMDb <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
     currentTMDBPage = 1; currentPage = 1;
     loadFilms();
   });
@@ -400,7 +400,7 @@ const initDetailPage = () => {
         )
       );
 
-      tmdbBtn.href = `https://www.themoviedb.org/movie/${movieId}`;
+      tmdbBtn.href = `https://www.themoviedb.org/movie/${movieId}/videos?language=en-US`;
       myListBtn(toFilmData(detail));
     } catch (err) {
       showError(

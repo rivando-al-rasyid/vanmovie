@@ -128,9 +128,7 @@ const buildAvatar = (session) => {
   wrapper.className = "avatar-wrapper relative ml-4";
 
   wrapper.innerHTML = `
-    <button class="avatar-btn w-10 h-10 rounded-full bg-indigo-600 text-white font-bold
-                   flex items-center justify-center text-sm"
-            aria-haspopup="true" aria-expanded="false">
+    <button class="avatar-btn w-10 h-10 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-sm" aria-haspopup="true" aria-expanded="false">
       ${initials}
     </button>
     <div class="avatar-dropdown hidden absolute right-0 mt-2 w-48 bg-white border
@@ -138,8 +136,7 @@ const buildAvatar = (session) => {
       <div class="px-4 py-2 border-b border-gray-100 text-xs text-gray-500 truncate">
         ${session.email}
       </div>
-      <a href="mylist.html"
-         class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+      <a href="mylist.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
         My Watchlists
       </a>
       <button id="logout-btn"
