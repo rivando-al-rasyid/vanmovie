@@ -14,17 +14,20 @@ export const REGISTERED_USERS = [
   { email: "test@example.com",    password: "test123"  },
   { email: "rivando02@gmail.com", password: "movie123" },
   { email: "user@moviespace.com", password: "movie123" },
-
-
-
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
 // SHARED UTILITIES  (DRY — used by login.js, signup.js, and navbar)
 // ══════════════════════════════════════════════════════════════════════════════
 
+/** */
 export const AuthUtils = {
   /** Basic email format check */
+  /**
+   *
+   * @param {string} email
+   * @returns
+   */
   isValidEmail: (email) => /\S+@\S+\.\S+/.test(email),
 
   /** Derive 2-letter initials from an email address */
@@ -43,13 +46,18 @@ export const AuthUtils = {
    * @param {boolean} isVisible — true to show
    */
   toggleError: (id, message = "", isVisible = false) => {
-    const el = document.getElementById(id);
+    const el = document.querySelector(`#${id}`);
     if (!el) return;
     el.textContent = message;
     el.classList.toggle("hidden", !isVisible);
   },
 
   /** Clear a list of error elements at once */
+  /**
+   *
+   * @param  {...any} ids
+   * @returns
+   */
   clearErrors: (...ids) => ids.forEach((id) => AuthUtils.toggleError(id)),
 };
 
@@ -62,7 +70,11 @@ export const Session = {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
     catch { return null; }
   },
-
+/**
+ *
+ * @param {*} user
+ * @returns
+ */
   save: (user) =>
     localStorage.setItem(SESSION_KEY, JSON.stringify({
       email:    user.email,
@@ -83,7 +95,7 @@ export const Session = {
  * Build and inject the fixed navbar into <body>.
  * Fires a "headerReady" CustomEvent when done.
  */
-export function createHeader() {
+export const createHeader = () => {
   const path     = window.location.pathname;
   const isFilms  = path.endsWith("films.html");
   const isMyList = path.endsWith("mylist.html");
@@ -123,13 +135,13 @@ export function createHeader() {
   `);
 
   document.dispatchEvent(new CustomEvent("headerReady"));
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // AVATAR DROPDOWN  (shown when a session exists)
 // ══════════════════════════════════════════════════════════════════════════════
 
-function buildAvatar(session) {
+const buildAvatar = (session) => {
   const initials = AuthUtils.getInitials(session.email);
   const wrapper  = document.createElement("div");
   wrapper.className = "avatar-wrapper relative ml-4";
@@ -170,24 +182,24 @@ function buildAvatar(session) {
 
   wrapper.querySelector("#logout-btn").onclick = Session.clear;
   return wrapper;
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // NAVBAR AUTH — replaces the Login button with the avatar when logged in
 // ══════════════════════════════════════════════════════════════════════════════
 
-export function initNavAuth() {
+export const initNavAuth = () => {
   const session = Session.get();
   if (!session) return;
   const loginBtn = document.querySelector(".btn-nav");
   if (loginBtn) loginBtn.replaceWith(buildAvatar(session));
-}
+};
 
 // ══════════════════════════════════════════════════════════════════════════════
 // BOOTSTRAP — inject header then wire up auth UI
 // ══════════════════════════════════════════════════════════════════════════════
 
-function boot() {
+const boot = () => {
   createHeader();
   initNavAuth();
 
@@ -196,7 +208,7 @@ function boot() {
     document.querySelectorAll(".avatar-dropdown.open")
       .forEach((d) => d.classList.remove("open"))
   );
-}
+};
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", boot);
