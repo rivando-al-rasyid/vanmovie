@@ -87,22 +87,7 @@ export const Session = {
   },
 };
 
-// ══════════════════════════════════════════════════════════════════════════════
-// NAVBAR — merged from header.js (DRY: one file builds the whole navbar)
-// ══════════════════════════════════════════════════════════════════════════════
-
-/**
- * Build and inject the fixed navbar into <body>.
- * Fires a "headerReady" CustomEvent when done.
- */
 export const createHeader = () => {
-  const path     = window.location.pathname;
-  const isFilms  = path.endsWith("films.html");
-  const isMyList = path.endsWith("mylist.html");
-  const isDetail = path.endsWith("detail.html");
-  const isIndex  = path.endsWith("index.html")  || path === "/";
-  const isSignUp = path.endsWith("signup.html");
-
   document.body.insertAdjacentHTML("afterbegin", `
     <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
       <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -112,20 +97,19 @@ export const createHeader = () => {
         </a>
         <ul class="flex items-center gap-4 list-none m-0 p-0">
           <li>
-            <a href="films.html"
-               class="nav-link text-sm no-underline ${isFilms || isDetail ? "active" : ""}">
+            <a href="films.html" class="nav-link text-sm no-underline">
               All Films
             </a>
           </li>
           <li>
             <a href="mylist.html"
-               class="nav-link text-sm no-underline ${isMyList ? "active" : ""}">
+               class="nav-link text-sm no-underline">
               My Watchlists
             </a>
           </li>
           <li>
             <a href="index.html"
-               class="btn-nav text-sm no-underline ${isIndex || isSignUp ? "active" : ""}">
+               class="btn-nav text-sm no-underline">
               Login
             </a>
           </li>
@@ -133,10 +117,7 @@ export const createHeader = () => {
       </nav>
     </header>
   `);
-
-  document.dispatchEvent(new CustomEvent("headerReady"));
 };
-
 // ══════════════════════════════════════════════════════════════════════════════
 // AVATAR DROPDOWN  (shown when a session exists)
 // ══════════════════════════════════════════════════════════════════════════════
