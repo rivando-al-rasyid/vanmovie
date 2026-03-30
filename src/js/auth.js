@@ -89,7 +89,7 @@ export const Session = {
 export const createHeader = () => {
   document.body.insertAdjacentHTML("afterbegin", `
     <header class="navbar fixed top-0 left-0 right-0 z-50 backdrop-blur">
-      <nav class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <nav class="max-w-8/10 mx-auto px-6 h-14 flex items-center justify-between">
         <a href="index.html" class="flex items-center gap-2 font-semibold no-underline">
           <img src="./src/asset/icon.svg" alt="Icon">
           <span>MovieSpace</span>

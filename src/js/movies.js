@@ -98,12 +98,11 @@ const buildRatingRow = (film) => {
   return row;
 };
 
-/** Build the overview <p> (truncated to 200 chars) */
 const buildOverview = (film) => {
   const desc = film.overview || "No description available.";
   const p    = document.createElement("p");
   p.className   = "text-xs leading-relaxed m-0";
-  p.textContent = desc.length > 200 ? desc.slice(0, 200) + "…" : desc;
+  p.textContent = desc.length > 400 ? desc.slice(0, 400) + "…" : desc;
   return p;
 };
 
