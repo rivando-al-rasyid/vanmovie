@@ -1,6 +1,9 @@
 // ── movies.js — Films list + Film detail + My Watchlist page ─────────────────
 // Single module that handles films.html, detail.html, AND mylist.html.
 // mylist.js has been merged here (DRY — shared card builder, watchlist helpers).
+//
+// popularity from TMDB. All filtering and sorting is done in-memory after
+// that — no further TMDB page fetches are needed.
 
 import { fetchMovies, fetchMovieDetail, fetchGenreList, imgUrl, toFilmData } from "./fetchData.js";
 
@@ -19,15 +22,30 @@ export const saveMyList = (list) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 };
 
-export const isInList       = (id) => getMyList().some((f) => f.id === id);
-export const removeFromList = (id) => saveMyList(getMyList().filter((f) => f.id !== id));
+export const isInList = (id) =>
+  getMyList().some((film) => film.id === id);
+
+export const removeFromList = (id) => {
+  const filteredList = getMyList().filter((film) => film.id !== id);
+  saveMyList(filteredList);
+};
 
 export const toggleInList = (filmData) => {
   const list = getMyList();
-  const idx  = list.findIndex((f) => f.id === filmData.id);
-  idx === -1 ? list.push(filmData) : list.splice(idx, 1);
+  const existingIndex = list.findIndex((film) => film.id === filmData.id);
+
+  const isAlreadyInList = existingIndex !== -1;
+
+  if (isAlreadyInList) {
+    list.splice(existingIndex, 1);
+  } else {
+    list.push(filmData);
+  }
+
   saveMyList(list);
-  return idx === -1; // true = added
+
+  const wasAdded = !isAlreadyInList;
+  return wasAdded;
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -67,13 +85,13 @@ const buildTitleRow = (film) => {
   return div;
 };
 
-/** Build the IMDb rating row */
+/** Build the IMDB rating row */
 const buildRatingRow = (film) => {
   const rating = film.vote_average ? film.vote_average.toFixed(1) : "N/A";
   const row    = document.createElement("div");
   row.className = "flex items-center gap-2 text-xs";
   row.innerHTML = `
-    <span class="tmdb-badge">IMDb</span>
+    <span class="tmdb-badge">IMDB</span>
     <span class="font-semibold">${rating} ★</span>
     <span>(${(film.vote_count || 0).toLocaleString()} votes)</span>
   `;
@@ -144,18 +162,19 @@ export const myListBtn = (filmData) => {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
-// FILMS PAGE
+// sorting, and pagination happen purely in-memory.
 // ══════════════════════════════════════════════════════════════════════════════
 
+const TOP_100_PAGES  = 5;   // 5 × 20 results = 100 films
+const TOP_100_TOTAL  = 100;
+
 const initFilmsPage = async () => {
-  let allFilms        = [];
+  let top100Films     = [];  // full 100 films fetched once
+  let displayedFilms  = [];  // subset after genre filter + sort
   let genres          = {};
   let activeGenreId   = 0;
-  let sortDesc        = true;
+  let sortDesc        = true;  // true = popularity desc (default), false = asc
   let currentPage     = 1;
-  let totalTMDBPages  = 1;
-  let currentTMDBPage = 1;
-  let totalResults    = 0;
   const perPage       = 10;
 
   const filmList  = document.querySelector("#film-list");
@@ -166,68 +185,115 @@ const initFilmsPage = async () => {
   const genreBtn  = document.querySelector("#genre-btn");
   const sortBtn   = document.querySelector("#sort-btn");
 
-  // ── Film card (films.html) ──────────────────────────────────────────────────
+  // ── Film card (films.html) ────────────────────────────────────────────────
 
   const createFilmCard = (film) => {
-    const filmGenres = (film.genre_ids || []).map((id) => genres[id]).filter(Boolean);
-    const li         = buildCardShell();
-    li.dataset.filmId = film.id;
+    const filmGenres = (film.genre_ids || [])
+      .map((id) => genres[id])
+      .filter(Boolean);
 
-    // Genre tags
-    const tagsRow = document.createElement("div");
-    tagsRow.className = "flex flex-wrap gap-1";
-    filmGenres.forEach((name) => {
+    const card = buildCardShell();
+    card.dataset.filmId = film.id;
+
+    const infoColumn = document.createElement("div");
+    infoColumn.className = "flex flex-col gap-1.5 min-w-0";
+    infoColumn.append(
+      buildTitleRow(film),
+      buildGenreTagsRow(filmGenres),
+      buildRatingRow(film),
+      buildOverview(film),
+      buildActionsRow(film),
+    );
+
+    card.append(buildPoster(film), infoColumn);
+    return card;
+  };
+
+  const buildGenreTagsRow = (genreNames) => {
+    const row = document.createElement("div");
+    row.className = "flex flex-wrap gap-1";
+    genreNames.forEach((name) => {
       const tag = document.createElement("span");
       tag.className   = "tag";
       tag.textContent = name;
-      tagsRow.appendChild(tag);
+      row.appendChild(tag);
     });
+    return row;
+  };
 
-    // Action buttons
-    const actions    = document.createElement("div");
-    actions.className = "flex gap-2 mt-1";
+  const buildActionsRow = (film) => {
     const detailLink = document.createElement("a");
     detailLink.href        = `detail.html?id=${film.id}`;
     detailLink.className   = "btn-primary text-xs px-3 py-1.5 rounded-full no-underline";
     detailLink.textContent = "View Details";
-    actions.append(detailLink, createWatchlistBtn(toFilmData(film), "text-xs px-3 py-1.5 rounded-full"));
 
-    const info = document.createElement("div");
-    info.className = "flex flex-col gap-1.5 min-w-0";
-    info.append(buildTitleRow(film), tagsRow, buildRatingRow(film), buildOverview(film), actions);
+    const watchlistBtn = createWatchlistBtn(
+      toFilmData(film),
+      "text-xs px-3 py-1.5 rounded-full",
+    );
 
-    li.append(buildPoster(film), info);
-    return li;
+    const row = document.createElement("div");
+    row.className = "flex gap-2 mt-1";
+    row.append(detailLink, watchlistBtn);
+    return row;
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── In-memory filter + sort ───────────────────────────────────────────────
+
+  /**
+   * Applies the active genre filter and popularity sort to top100Films,
+   * then stores the result in displayedFilms.
+   */
+  const applyFilterAndSort = () => {
+    let result = activeGenreId === 0
+      ? [...top100Films]
+      : top100Films.filter((f) => (f.genre_ids || []).includes(activeGenreId));
+
+    // Sort by popularity (vote_average used here as the "IMDB" sort proxy;
+    // swap to `f.popularity` if you prefer raw popularity score)
+    result.sort((a, b) =>
+      sortDesc
+        ? (b.popularity || 0) - (a.popularity || 0)
+        : (a.popularity || 0) - (b.popularity || 0)
+    );
+
+    displayedFilms = result;
+    currentPage    = 1;
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   const renderFilms = () => {
-    if (!allFilms.length) {
+    if (!displayedFilms.length) {
       filmList.replaceChildren(
         Object.assign(document.createElement("p"), {
           className:   "py-8 text-center",
           textContent: "Tidak ada film ditemukan.",
         })
       );
-      pageTitle.textContent = "All Films (0)";
+      pageTitle.textContent = "Films (0)";
       return;
     }
     const start = (currentPage - 1) * perPage;
-    filmList.replaceChildren(...allFilms.slice(start, start + perPage).map(createFilmCard));
+    filmList.replaceChildren(
+      ...displayedFilms.slice(start, start + perPage).map(createFilmCard)
+    );
   };
 
   const renderPagination = () => {
-    const localPages  = Math.ceil(allFilms.length / perPage);
-    const grandTotal  = Math.min(totalResults, 5000);
-    pageTitle.textContent = `All Films (${grandTotal.toLocaleString()}+)`;
+    const total      = displayedFilms.length;
+    const localPages = Math.ceil(total / perPage);
 
-    const startItem = (currentTMDBPage - 1) * 20 + (currentPage - 1) * perPage + 1;
-    const endItem   = Math.min(startItem + perPage - 1, grandTotal);
-    paginInfo.textContent = `${startItem} – ${endItem} of ${grandTotal.toLocaleString()}`;
+    pageTitle.textContent = `Films (${total})`;
 
-    const isFirst = currentPage <= 1 && currentTMDBPage <= 1;
-    const isLast  = currentPage >= localPages && currentTMDBPage >= totalTMDBPages;
+    const startItem = (currentPage - 1) * perPage + 1;
+    const endItem   = Math.min(startItem + perPage - 1, total);
+    paginInfo.textContent = total
+      ? `${startItem} – ${endItem} of ${total}`
+      : "0 results";
+
+    const isFirst = currentPage <= 1;
+    const isLast  = currentPage >= localPages;
 
     const makeArrow = (label, symbol, disabled, onClick) => {
       const btn = document.createElement("button");
@@ -243,38 +309,42 @@ const initFilmsPage = async () => {
     pageBtns.replaceChildren(
       makeArrow("Previous page", "‹", isFirst, () => {
         if (currentPage > 1) { currentPage--; renderFilms(); renderPagination(); }
-        else if (currentTMDBPage > 1) { currentTMDBPage--; currentPage = Math.ceil(20 / perPage); loadFilms(); }
         window.scrollTo(0, 0);
       }),
       makeArrow("Next page", "›", isLast, () => {
         if (currentPage < localPages) { currentPage++; renderFilms(); renderPagination(); }
-        else if (currentTMDBPage < totalTMDBPages) { currentTMDBPage++; currentPage = 1; loadFilms(); }
         window.scrollTo(0, 0);
       })
     );
   };
 
-  // ── Data loading ────────────────────────────────────────────────────────────
+  // ── Data loading (runs once) ──────────────────────────────────────────────
 
-  const loadFilms = async () => {
-    try {
-      const data     = await fetchMovies({ page: currentTMDBPage, sortDesc, genreId: activeGenreId, minVotes: 500 });
-      totalTMDBPages = Math.min(data.total_pages || 1, 250);
-      totalResults   = data.total_results || 0;
-      allFilms       = data.results || [];
-      renderFilms();
-      renderPagination();
-    } catch {
-      filmList.replaceChildren(
-        Object.assign(document.createElement("p"), {
-          className:   "py-8 text-center",
-          textContent: "Gagal memuat data. Coba refresh halaman.",
-        })
-      );
+  /**
+   * Fetches TOP_100_PAGES pages from TMDB (sorted by popularity desc) in
+   * parallel, deduplicates by id, and trims to TOP_100_TOTAL entries.
+   */
+  const loadTop100 = async () => {
+    const pages = await Promise.all(
+      Array.from({ length: TOP_100_PAGES }, (_, i) =>
+        fetchMovies({ page: i + 1, sortDesc: true, genreId: 0, minVotes: 500 })
+      )
+    );
+
+    const seen = new Set();
+    const all  = [];
+    for (const page of pages) {
+      for (const film of (page.results || [])) {
+        if (!seen.has(film.id)) { seen.add(film.id); all.push(film); }
+        if (all.length >= TOP_100_TOTAL) break;
+      }
+      if (all.length >= TOP_100_TOTAL) break;
     }
+
+    top100Films = all.slice(0, TOP_100_TOTAL);
   };
 
-  // ── Genre menu ──────────────────────────────────────────────────────────────
+  // ── Genre menu ────────────────────────────────────────────────────────────
 
   const buildGenreMenu = (list) => {
     const items = [{ id: 0, name: "All Genres" }, ...list].map((g) => {
@@ -292,14 +362,17 @@ const initFilmsPage = async () => {
   };
 
   const filterByGenre = (id, name) => {
-    activeGenreId = id; currentTMDBPage = 1; currentPage = 1;
-    genreMenu.classList.add("hidden"); genreMenu.classList.remove("open");
+    activeGenreId = id;
+    genreMenu.classList.add("hidden");
+    genreMenu.classList.remove("open");
     genreBtn.innerHTML = `${name.toUpperCase()} <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>`;
     genreBtn.classList.toggle("active-filter", id !== 0);
-    loadFilms();
+    applyFilterAndSort();
+    renderFilms();
+    renderPagination();
   };
 
-  // ── Controls ────────────────────────────────────────────────────────────────
+  // ── Controls ──────────────────────────────────────────────────────────────
 
   genreBtn.addEventListener("click", () => {
     genreMenu.classList.toggle("hidden");
@@ -308,24 +381,31 @@ const initFilmsPage = async () => {
 
   sortBtn.addEventListener("click", () => {
     sortDesc = !sortDesc;
-    sortBtn.innerHTML = `SORT BY IMDb <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
-    currentTMDBPage = 1; currentPage = 1;
-    loadFilms();
+    sortBtn.innerHTML = `Sort by IMDB <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>`;
+    applyFilterAndSort();
+    renderFilms();
+    renderPagination();
   });
 
   document.addEventListener("click", (e) => {
     if (!e.target.closest("#genre-btn") && !e.target.closest("#genre-menu")) {
-      genreMenu.classList.add("hidden"); genreMenu.classList.remove("open");
+      genreMenu.classList.add("hidden");
+      genreMenu.classList.remove("open");
     }
   });
 
-  // ── Init ────────────────────────────────────────────────────────────────────
+  // ── Init ──────────────────────────────────────────────────────────────────
 
   try {
-    const genreList = await fetchGenreList();
+    const [genreList] = await Promise.all([
+      fetchGenreList(),
+      loadTop100(),
+    ]);
     genreList.forEach((g) => (genres[g.id] = g.name));
     buildGenreMenu(genreList);
-    await loadFilms();
+    applyFilterAndSort();
+    renderFilms();
+    renderPagination();
   } catch (err) {
     filmList.replaceChildren(
       Object.assign(document.createElement("p"), {
@@ -430,7 +510,6 @@ const initMyListPage = () => {
     const li = buildCardShell();
     li.dataset.id = film.id;
 
-    // Remove button
     const removeBtn = document.createElement("button");
     Object.assign(removeBtn, { type: "button", textContent: "Remove" });
     removeBtn.className = "btn-remove text-xs px-3 py-1.5 rounded-full transition-colors cursor-pointer bg-transparent";
@@ -448,7 +527,6 @@ const initMyListPage = () => {
       renderMyList();
     });
 
-    // Detail link
     const detailLink = document.createElement("a");
     detailLink.href        = `detail.html?id=${film.id}`;
     detailLink.className   = "btn-primary text-xs px-3 py-1.5 rounded-full no-underline";

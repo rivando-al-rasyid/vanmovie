@@ -12,7 +12,6 @@ const REMEMBER_KEY = "moviespace_remember_email";
 // Mock users — replace with real API calls in production
 export const REGISTERED_USERS = [
   { email: "test@example.com",    password: "test123"  },
-  { email: "rivando02@gmail.com", password: "movie123" },
   { email: "user@moviespace.com", password: "movie123" },
 ];
 

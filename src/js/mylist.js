@@ -53,7 +53,7 @@ const createFilmCard = (film) => {
   const ratingRow = document.createElement("div");
   ratingRow.className = "flex items-center gap-2 text-xs";
   ratingRow.innerHTML = `
-    <span class="tmdb-badge">IMDb</span>
+    <span class="tmdb-badge">IMDB</span>
     <span class="font-semibold">${rating} ★</span>
     <span>(${(film.vote_count || 0).toLocaleString()} votes)</span>
   `;
