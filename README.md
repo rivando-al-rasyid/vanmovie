@@ -12,7 +12,6 @@ A front-end movie browser powered by the TMDB API. Built with vanilla HTML, CSS,
 ## Preview
 
 * Gold (`#F5C518`) accent on dark grey (`#141414`) background
-* Playfair Display for headings, Lato for body text
 * Film grain texture and golden light-leak effects
 * Responsive poster grid with dynamic film cards
 
